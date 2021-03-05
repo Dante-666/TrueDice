@@ -47,11 +47,12 @@ class HelloWorld : public cocos2d::Scene {
     // will be involved
     cocos2d::Physics3DRigidBody *dice;
 
-    // TODO: To be removed in release later
+#ifdef COCOS2D_DEBUG
     cocos2d::Label *accelLabel;
     cocos2d::Label *gravityLabel;
     float _accumlaDt = 0;
     float _accumgDt = 0;
+#endif
 
     // Menu specific items
     MenuDelegate _menuD;
@@ -69,8 +70,10 @@ class HelloWorld : public cocos2d::Scene {
     // add menu item and callback for slide
     void insertMainMenu();
 
+#ifdef COCOS2D_DEBUG
     // display acceleration data for debug
     void insertDebugLabels();
+#endif
 
     // include physics and camera node
     void initPhysicsAndCamera();

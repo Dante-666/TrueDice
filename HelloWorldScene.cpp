@@ -76,7 +76,9 @@ bool HelloWorld::init() {
 
     insertMainMenu();
 
+#ifdef COCOS2D_DEBUG
     insertDebugLabels();
+#endif
 
     initPhysicsAndCamera();
 
@@ -171,6 +173,7 @@ void HelloWorld::insertMainMenu() {
                                                              this);*/
 }
 
+#ifdef COCOS2D_DEBUG
 void HelloWorld::insertDebugLabels() {
     // create label atlas for showing raw accel data
     accelLabel = Label::create();
@@ -197,14 +200,19 @@ void HelloWorld::insertDebugLabels() {
         this->addChild(gravityLabel, 1);
     }
 }
+#endif
 
 void HelloWorld::initPhysicsAndCamera() {
-    const GLubyte *glslVersion = glGetString(GL_SHADING_LANGUAGE_VERSION);
-    printf("GLSL Version         : %s\n", glslVersion);
+
     // construct PhysicsWorld
     auto world = this->getPhysics3DWorld();
+#ifdef COCOS2D_DEBUG
+    const GLubyte *glslVersion = glGetString(GL_SHADING_LANGUAGE_VERSION);
+    printf("GLSL Version         : %s\n", glslVersion);
     if (!world->isDebugDrawEnabled())
         world->setDebugDrawEnable(true);
+#endif
+
     world->setGravity(Vec3(0, 0, 0));
 
     Size size = Director::getInstance()->getWinSize();
@@ -440,6 +448,8 @@ void HelloWorld::onTouchEnded(Touch *touch, Event *event) {
 
 void HelloWorld::onAcceleration(Acceleration *accel, Event *event) {
     auto android_l_accel = android2Game * Vec3(accel->x, accel->y, accel->z);
+
+#ifdef COCOS2D_DEBUG
     _accumlaDt += Director::getInstance()->getDeltaTime();
     if (_accumlaDt > CC_DIRECTOR_STATS_INTERVAL) {
         char buffer[30] = {0};
@@ -448,6 +458,7 @@ void HelloWorld::onAcceleration(Acceleration *accel, Event *event) {
         accelLabel->setString(buffer);
         _accumlaDt = 0;
     }
+#endif
     // apply a scaled force in the opposite direction to make it work
     // the impulses are too wild,
     // scale these down and also negate the world gravity while applying this
@@ -459,6 +470,8 @@ void HelloWorld::onGravity(EventCustom *event) {
     Acceleration *gravity = static_cast<Acceleration *>(event->getUserData());
     auto android_gravity =
         android2Game * Vec3(gravity->x, gravity->y, gravity->z);
+
+#ifdef COCOS2D_DEBUG
     _accumgDt += Director::getInstance()->getDeltaTime();
     if (_accumgDt > CC_DIRECTOR_STATS_INTERVAL) {
         char buffer[30] = {0};
@@ -467,6 +480,8 @@ void HelloWorld::onGravity(EventCustom *event) {
         gravityLabel->setString(buffer);
         _accumgDt = 0;
     }
+#endif
+
     CC_SAFE_DELETE(gravity);
     // Multiply this by 9.8 or some scale factor for better augmented reality
     this->getPhysics3DWorld()->setGravity(android_gravity * TG3_GRAVITY_EARTH);
