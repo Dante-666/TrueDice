@@ -95,8 +95,8 @@ bool HelloWorld::init() {
 }
 
 void HelloWorld::insertMainMenu() {
-    auto visibleSize = Director::getInstance()->getVisibleSize();
-    auto origin = Director::getInstance()->getVisibleOrigin();
+    auto vSize = Director::getInstance()->getVisibleSize();
+    auto vOrig = Director::getInstance()->getVisibleOrigin();
 
 #ifdef COCOS2D_DEBUG
     auto printVec = [] (Vec2& vec) {
@@ -112,16 +112,17 @@ void HelloWorld::insertMainMenu() {
 #endif
 
 #ifdef COCOS2D_DEBUG
-    printVec(origin);
-    printSize(visibleSize);
+    printVec(vOrig);
+    printSize(vSize);
 #endif
 
     // This gives how much screen area we have to work with
-    auto halfRect = Rect(origin, visibleSize);
+    auto halfRect = Rect(vOrig, vSize);
     halfRect.size.width /= 2;
+    auto orig = Vec2(0, 0);
 
     // Calculate the bounding rects of add, close and refresh buttons
-    auto w1_3 = halfRect.size.width/3;
+    auto w1_3 = halfRect.size.height/3;
     auto botRectOrigin = Vec2(halfRect.size.width - w1_3, 0);
     auto botRectOffset = Vec2(0, w1_3);
     auto botRectSize = Size(w1_3, w1_3);
@@ -131,19 +132,63 @@ void HelloWorld::insertMainMenu() {
     auto refreshRect = Rect(botRectOrigin + 2 * botRectOffset, botRectSize);
 
     // Calculate the dice bounding rect
+    auto w3_5 = halfRect.size.height * 3 / 5;
+    auto dieRect = Rect(orig, Size(botRectOrigin.x, w3_5));
 
-    auto background = MenuItemImage::create("menu_bg.png", "menu_bg.png");
+    // Paricle effect
+    auto pEffSize = Size(dieRect.size.width/3, (halfRect.size.height - dieRect.size.height)/2);
+    auto pEffOrigin = Vec2(dieRect.size.width - pEffSize.width, dieRect.size.height);
+    auto pEffOffset = Vec2(0, pEffSize.height);
+    auto fireRect = Rect(pEffOrigin, pEffSize);
+    auto lightRect = Rect(pEffOrigin + pEffOffset, pEffSize);
 
-    if (background == nullptr || background->getContentSize().width <= 0 ||
-        background->getContentSize().height <= 0) {
-        problemLoading("'menu_bg.png'");
+    // Likewise for the colorChange icon
+    auto colChangeSize = Size(dieRect.size.width - pEffSize.width,
+                              halfRect.size.height - dieRect.size.height);
+    auto colChangeRect = Rect(orig + Vec2(0, w3_5), colChangeSize);
+
+    auto loadMenuItem = [] (std::string loc, Rect &pos) -> MenuItem* {
+	auto imgLoc = "menuIcons/" + loc;
+        auto mii = MenuItemImage::create(imgLoc, imgLoc);
+	mii->setRotation(-90);
+
+        if (mii == nullptr || mii->getContentSize().width <= 0 ||
+            mii->getContentSize().height <= 0) {
+            problemLoading(loc.c_str());
+        } else {
+            mii->setPosition(pos.getMidX(), pos.getMidY());
+        }
+	    
+	return mii;
+    };
+
+#ifdef COCOS2D_DEBUG
+    auto showRect = dieRect;
+    auto rty = Label::create();
+    rty->retain();
+    char buffer[40] = {0};
+    sprintf(buffer, "Rect : (%1.2f, %1.2f) , (%1.2f, %1.2f)", showRect.origin.x, showRect.origin.y, showRect.size.width, showRect.size.height);
+    rty->initWithTTF(buffer, "fonts/Marker Felt.ttf", 24);
+    if (rty == nullptr) {
+        problemLoading("'fonts/Marker Felt.ttf'");
     } else {
-        background->setPosition(origin.x, origin.y);
+        rty->setPosition(Vec2(1200, 100));
+        this->addChild(rty, 1);
     }
 
-    _menu = Menu::create(background, NULL);
-    //_menu->setPosition(origin.x-600, origin.y+200);
-    _menu->setPosition(240, 160);
+    printRect(colChangeRect);
+#endif
+
+    auto add = loadMenuItem(("add.png"), addRect);
+    auto close = loadMenuItem(("close.png"), closeRect);
+    auto refresh = loadMenuItem(("refresh.png"), refreshRect);
+    auto dice = loadMenuItem(("dice.png"), dieRect);
+    auto colChange = loadMenuItem(("colChange.png"), colChangeRect);
+    auto fire = loadMenuItem(("fire.png"), fireRect);
+    auto light = loadMenuItem(("light.png"), lightRect);
+
+    _menu = Menu::create(add, close, refresh, dice, colChange, fire, light, NULL);
+    _menu->setPosition(vOrig.x, vOrig.y);
     this->addChild(_menu, 1);
     _menuD.setMenu(_menu);
     //_menu.swipeDownwards();
