@@ -60,7 +60,7 @@ class HelloWorld : public cocos2d::Scene {
 
     // Store initial touch location
     cocos2d::Vec2* _touchBeginLoc;
-    float _minSwipeLen = 0.4;
+    float _minSwipeLen = 200;
 
   public:
     static cocos2d::Scene *createScene();
