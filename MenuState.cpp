@@ -1,26 +1,18 @@
 #include "MenuState.h"
 #include "2d/CCActionEase.h"
 #include "2d/CCActionInterval.h"
+#include "math/CCGeometry.h"
 #include "math/Vec2.h"
 
-CenterState::CenterState() {
-    actionUp = cocos2d::MoveBy::create(1, cocos2d::Vec2(-300, 0));
-    easeUp = cocos2d::EaseBounceOut::create(actionUp);
-    CC_SAFE_RETAIN(easeUp);
-    actionLeft = cocos2d::MoveBy::create(1, cocos2d::Vec2(0, -300));
-    easeLeft = cocos2d::EaseBounceOut::create(actionLeft);
-    CC_SAFE_RETAIN(easeLeft);
-    actionRight = cocos2d::MoveBy::create(1, cocos2d::Vec2(0, 300));
-    easeRight = cocos2d::EaseBounceOut::create(actionRight);
-    CC_SAFE_RETAIN(easeRight);
-}
+CenterState::CenterState() {}
+
 CenterState::~CenterState() {
-    delete easeUp;
-    delete actionUp;
-    delete easeLeft;
-    delete actionLeft;
-    delete easeRight;
-    delete actionRight;
+    CC_SAFE_DELETE(easeUp);
+    CC_SAFE_DELETE(actionUp);
+    CC_SAFE_DELETE(easeLeft);
+    CC_SAFE_DELETE(actionLeft);
+    CC_SAFE_DELETE(easeRight);
+    CC_SAFE_DELETE(actionRight);
 }
 MenuState *CenterState::swipeRight() {
     getMenu()->runAction(easeRight);
@@ -34,49 +26,69 @@ MenuState *CenterState::swipeUpwards() {
     getMenu()->runAction(easeUp);
     return InActiveState::getInstance();
 };
-
-LeftState::LeftState() {
-    actionRight = cocos2d::MoveBy::create(1, cocos2d::Vec2(0, 300));
+void CenterState::setMoveToDims(cocos2d::Rect &visRect) {
+    actionUp =
+        cocos2d::MoveBy::create(1, cocos2d::Vec2(-visRect.size.width, 0));
+    easeUp = cocos2d::EaseBounceOut::create(actionUp);
+    CC_SAFE_RETAIN(easeUp);
+    actionLeft =
+        cocos2d::MoveBy::create(1, cocos2d::Vec2(0, -visRect.size.height));
+    easeLeft = cocos2d::EaseBounceOut::create(actionLeft);
+    CC_SAFE_RETAIN(easeLeft);
+    actionRight =
+        cocos2d::MoveBy::create(1, cocos2d::Vec2(0, visRect.size.height));
     easeRight = cocos2d::EaseBounceOut::create(actionRight);
     CC_SAFE_RETAIN(easeRight);
 }
 
-LeftState::~LeftState() {
-    delete easeRight;
-    delete actionRight;
-}
+LeftState::LeftState() {}
 
+LeftState::~LeftState() {
+    CC_SAFE_DELETE(easeRight);
+    CC_SAFE_DELETE(actionRight);
+}
 MenuState *LeftState::swipeRight() {
     getMenu()->runAction(easeRight);
     return CenterState::getInstance();
 }
-
-RightState::RightState() {
-    actionLeft = cocos2d::MoveBy::create(1, cocos2d::Vec2(0, -300));
-    easeLeft = cocos2d::EaseBounceOut::create(actionLeft);
-    CC_SAFE_RETAIN(easeLeft);
+void LeftState::setMoveToDims(cocos2d::Rect &visRect) {
+    actionRight =
+        cocos2d::MoveBy::create(1, cocos2d::Vec2(0, visRect.size.height));
+    easeRight = cocos2d::EaseBounceOut::create(actionRight);
+    CC_SAFE_RETAIN(easeRight);
 }
 
+RightState::RightState() {}
+
 RightState::~RightState() {
-    delete easeLeft;
-    delete actionLeft;
+    CC_SAFE_DELETE(easeLeft);
+    CC_SAFE_DELETE(actionLeft);
 }
 
 MenuState *RightState::swipeLeft() {
     getMenu()->runAction(easeLeft);
     return CenterState::getInstance();
 }
-
-InActiveState::InActiveState() {
-    actionDown = cocos2d::MoveBy::create(1, cocos2d::Vec2(300, 0));
-    easeDown = cocos2d::EaseBounceOut::create(actionDown);
-    CC_SAFE_RETAIN(easeDown);
+void RightState::setMoveToDims(cocos2d::Rect &visRect) {
+    actionLeft =
+        cocos2d::MoveBy::create(1, cocos2d::Vec2(0, -visRect.size.height));
+    easeLeft = cocos2d::EaseBounceOut::create(actionLeft);
+    CC_SAFE_RETAIN(easeLeft);
 }
+
+InActiveState::InActiveState() {}
+
 InActiveState::~InActiveState() {
-    delete easeDown;
-    delete actionDown;
+    CC_SAFE_DELETE(easeDown);
+    CC_SAFE_DELETE(actionDown);
 }
 MenuState *InActiveState::swipeDownwards() {
     getMenu()->runAction(easeDown);
     return CenterState::getInstance();
 };
+void InActiveState::setMoveToDims(cocos2d::Rect &visRect) {
+    actionDown =
+        cocos2d::MoveBy::create(1, cocos2d::Vec2(visRect.size.width, 0));
+    easeDown = cocos2d::EaseBounceOut::create(actionDown);
+    CC_SAFE_RETAIN(easeDown);
+}

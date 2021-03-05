@@ -2,6 +2,7 @@
 #include "2d/CCActionEase.h"
 #include "2d/CCActionInterval.h"
 #include "2d/CCMenu.h"
+#include "math/CCGeometry.h"
 
 template <typename T> class Singleton {
   public:
@@ -22,10 +23,12 @@ class MenuState {
     virtual MenuState *swipeLeft() { return this; };
     virtual MenuState *swipeUpwards() { return this; };
     virtual MenuState *swipeDownwards() { return this; };
+    virtual void setMoveToDims(cocos2d::Rect& visRect) = 0;
 
-    void setMenu(cocos2d::Menu *menu) {
+    void setNode(cocos2d::Menu *menu, cocos2d::Rect& visRect) {
 	_menu = menu; 
 	CC_SAFE_RETAIN(_menu);
+	setMoveToDims(visRect);
     };
     cocos2d::Menu *getMenu() { return _menu; };
 };
@@ -44,6 +47,7 @@ class CenterState : public MenuState, public Singleton<CenterState> {
     virtual MenuState *swipeRight() override;
     virtual MenuState *swipeLeft() override;
     virtual MenuState *swipeUpwards() override;
+    virtual void setMoveToDims(cocos2d::Rect& visRect) override;
     friend class Singleton<CenterState>;
 };
 
@@ -55,6 +59,7 @@ class LeftState : public MenuState, public Singleton<LeftState> {
 
   public:
     virtual MenuState *swipeRight() override;
+    virtual void setMoveToDims(cocos2d::Rect& visRect) override;
     friend class Singleton<LeftState>;
 };
 
@@ -66,6 +71,7 @@ class RightState : public MenuState, public Singleton<RightState> {
 
   public:
     virtual MenuState *swipeLeft() override;
+    virtual void setMoveToDims(cocos2d::Rect& visRect) override;
     friend class Singleton<RightState>;
 };
 
@@ -77,6 +83,7 @@ class InActiveState : public MenuState, public Singleton<InActiveState> {
 
   public:
     virtual MenuState *swipeDownwards() override;
+    virtual void setMoveToDims(cocos2d::Rect& visRect) override;
     friend class Singleton<InActiveState>;
 };
 
@@ -84,11 +91,11 @@ class MenuDelegate {
     MenuState *_currState;
 
   public:
-    void setMenu(cocos2d::Menu *menu) {
-        InActiveState::getInstance()->setMenu(menu);
-	CenterState::getInstance()->setMenu(menu);
-	LeftState::getInstance()->setMenu(menu);
-	RightState::getInstance()->setMenu(menu);
+    void setNodeAndSize(cocos2d::Menu *menu, cocos2d::Rect& visRect) {
+        InActiveState::getInstance()->setNode(menu, visRect);
+	CenterState::getInstance()->setNode(menu, visRect);
+	LeftState::getInstance()->setNode(menu, visRect);
+	RightState::getInstance()->setNode(menu, visRect);
 
         _currState = InActiveState::getInstance();
     };

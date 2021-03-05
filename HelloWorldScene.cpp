@@ -24,8 +24,8 @@
 
 #include "HelloWorldScene.h"
 #include "renderer/backend/Types.h"
-#include <vector>
 #include <iostream>
+#include <vector>
 
 USING_NS_CC;
 
@@ -99,21 +99,18 @@ void HelloWorld::insertMainMenu() {
     auto vOrig = Director::getInstance()->getVisibleOrigin();
 
 #ifdef COCOS2D_DEBUG
-    auto printVec = [] (Vec2& vec) {
-	std::cout << "Vector : (" << vec.x << ", " << vec.y << ")" << std::endl;
+    auto printVec = [](Vec2 &vec) {
+        std::cout << "Vector : (" << vec.x << ", " << vec.y << ")" << std::endl;
     };
-    auto printSize = [] (Size& sz) {
-	std::cout << "Size : (" << sz.width << ", " << sz.height << ")" << std::endl;
+    auto printSize = [](Size &sz) {
+        std::cout << "Size : (" << sz.width << ", " << sz.height << ")"
+                  << std::endl;
     };
     auto printRect = [](Rect &rt) {
         std::cout << "Rect : (" << rt.origin.x << ", " << rt.origin.y << " | "
-                  << rt.size.width << ", " << rt.size.height << ")" << std::endl;
+                  << rt.size.width << ", " << rt.size.height << ")"
+                  << std::endl;
     };
-#endif
-
-#ifdef COCOS2D_DEBUG
-    printVec(vOrig);
-    printSize(vSize);
 #endif
 
     // This gives how much screen area we have to work with
@@ -122,7 +119,7 @@ void HelloWorld::insertMainMenu() {
     auto orig = Vec2(0, 0);
 
     // Calculate the bounding rects of add, close and refresh buttons
-    auto w1_3 = halfRect.size.height/3;
+    auto w1_3 = halfRect.size.height / 3;
     auto botRectOrigin = Vec2(halfRect.size.width - w1_3, 0);
     auto botRectOffset = Vec2(0, w1_3);
     auto botRectSize = Size(w1_3, w1_3);
@@ -136,8 +133,10 @@ void HelloWorld::insertMainMenu() {
     auto dieRect = Rect(orig, Size(botRectOrigin.x, w3_5));
 
     // Paricle effect
-    auto pEffSize = Size(dieRect.size.width/3, (halfRect.size.height - dieRect.size.height)/2);
-    auto pEffOrigin = Vec2(dieRect.size.width - pEffSize.width, dieRect.size.height);
+    auto pEffSize = Size(dieRect.size.width / 3,
+                         (halfRect.size.height - dieRect.size.height) / 2);
+    auto pEffOrigin =
+        Vec2(dieRect.size.width - pEffSize.width, dieRect.size.height);
     auto pEffOffset = Vec2(0, pEffSize.height);
     auto fireRect = Rect(pEffOrigin, pEffSize);
     auto lightRect = Rect(pEffOrigin + pEffOffset, pEffSize);
@@ -147,10 +146,101 @@ void HelloWorld::insertMainMenu() {
                               halfRect.size.height - dieRect.size.height);
     auto colChangeRect = Rect(orig + Vec2(0, w3_5), colChangeSize);
 
-    auto loadMenuItem = [] (std::string loc, Rect &pos) -> MenuItem* {
-	auto imgLoc = "menuIcons/" + loc;
+    // Mobile Rect
+    auto mobileSize = halfRect.size;
+    mobileSize.width *= 2. / 3;
+    auto mobileRect = Rect(orig + Vec2(0, halfRect.size.height), mobileSize);
+
+    // Usage Rect
+    auto usageSize = halfRect.size;
+    usageSize.width /= 9;
+    auto usageRect =
+        Rect(mobileRect.origin + Vec2(mobileSize.width, 0), usageSize);
+
+    // Instruction Rect
+    auto instSize = halfRect.size;
+    instSize.width *= 2. / 9;
+    auto instRect =
+        Rect(usageRect.origin + Vec2(usageRect.size.width, 0), instSize);
+
+    // Left main Rect
+    auto leftMainSize = halfRect.size;
+    leftMainSize.width *= 4. / 5;
+    leftMainSize.height *= 3. / 5;
+    auto offset = Vec2(halfRect.size.width / 10, halfRect.size.height / 5);
+    auto leftMainRect =
+        Rect(orig - Vec2(0, halfRect.size.height) + offset, leftMainSize);
+
+    // Credit Rect
+    auto creditSize = leftMainSize;
+    creditSize.width /= 8;
+    auto creditRect = Rect(leftMainRect.origin, creditSize);
+
+    // Info Rect
+    auto infoSize = leftMainSize;
+    infoSize.width *= 49. / 96;
+    auto infoRect =
+        Rect(creditRect.origin + Vec2(creditSize.width, 0), infoSize);
+
+    // Builtby Rect also use this for copyRight
+    auto builtSize = leftMainSize;
+    builtSize.width /= 12;
+    auto builtRect = Rect(infoRect.origin + Vec2(infoSize.width, 0), builtSize);
+
+    // Icon Rects
+    auto iconSize = leftMainSize;
+    iconSize.width *= 9. / 32;
+    iconSize.height = leftMainSize.height / 3;
+    auto iconRect = Rect(builtRect.origin + Vec2(builtSize.width, 0), iconSize);
+    auto iconOffSet = Vec2(0, iconSize.height);
+    auto inkRect = Rect(iconRect.origin, iconRect.size);
+    auto cocoRect = Rect(iconRect.origin + iconOffSet, iconRect.size);
+    auto blenderRect = Rect(iconRect.origin + 2 * iconOffSet, iconRect.size);
+
+    // Copyright Rect
+    auto copyRect =
+        Rect(Vec2(halfRect.size.width - builtSize.width, iconRect.origin.y),
+             builtSize);
+
+    TTFConfig labelConfig;
+    labelConfig.fontFilePath = "fonts/Marker Felt.ttf";
+    labelConfig.fontSize = 24;
+    labelConfig.glyphs = GlyphCollection::DYNAMIC;
+    labelConfig.outlineSize = 0;
+    labelConfig.customGlyphs = nullptr;
+    labelConfig.distanceFieldEnabled = false;
+
+    TTFConfig bigLabelConfig = labelConfig;
+    bigLabelConfig.fontSize = 36;
+
+    auto usageLabel = Label::createWithTTF(bigLabelConfig, "Usage");
+    auto instLabel = Label::createWithTTF(
+        labelConfig,
+        "Accelerometer is usually offset from the center and "
+        "close to where the camera is.\n Holding the mobile as depicted and "
+        "shaking it left and right should result in the best effect.",
+        TextHAlignment::LEFT);
+    auto creditLabel =
+        Label::createWithTTF(bigLabelConfig, "Credits", TextHAlignment::CENTER);
+    auto infoLabel =
+        Label::createWithTTF(labelConfig,
+                             "Artwork : Siddharth\n"
+                             "Design : Siddharth\n\n"
+                             "SFX @ <source>\n"
+                             "Textures @ <source>\n\n"
+                             "Contact : SiddharthJSingh@protonmail.com",
+                             TextHAlignment::CENTER);
+    auto builtLabel =
+        Label::createWithTTF(labelConfig, "Built With", TextHAlignment::CENTER);
+    auto copyLabel = Label::createWithTTF(labelConfig,
+                                          "Copyright 2021, Siddharth J Singh\n"
+                                          "All rights reserved",
+                                          TextHAlignment::CENTER);
+
+    auto loadMenuItem = [](std::string loc, Rect &pos) -> MenuItem * {
+        auto imgLoc = "menuIcons/" + loc;
         auto mii = MenuItemImage::create(imgLoc, imgLoc);
-	mii->setRotation(-90);
+        mii->setRotation(-90);
 
         if (mii == nullptr || mii->getContentSize().width <= 0 ||
             mii->getContentSize().height <= 0) {
@@ -158,8 +248,16 @@ void HelloWorld::insertMainMenu() {
         } else {
             mii->setPosition(pos.getMidX(), pos.getMidY());
         }
-	    
-	return mii;
+
+        return mii;
+    };
+
+    auto loadMenuLabel = [](Label *label, Rect &pos) -> MenuItem * {
+        auto mli = MenuItemLabel::create(label);
+        mli->setRotation(-90);
+        mli->setPosition(pos.getMidX(), pos.getMidY());
+
+        return mli;
     };
 
 #ifdef COCOS2D_DEBUG
@@ -167,7 +265,8 @@ void HelloWorld::insertMainMenu() {
     auto rty = Label::create();
     rty->retain();
     char buffer[40] = {0};
-    sprintf(buffer, "Rect : (%1.2f, %1.2f) , (%1.2f, %1.2f)", showRect.origin.x, showRect.origin.y, showRect.size.width, showRect.size.height);
+    sprintf(buffer, "Rect : (%1.2f, %1.2f) , (%1.2f, %1.2f)", showRect.origin.x,
+            showRect.origin.y, showRect.size.width, showRect.size.height);
     rty->initWithTTF(buffer, "fonts/Marker Felt.ttf", 24);
     if (rty == nullptr) {
         problemLoading("'fonts/Marker Felt.ttf'");
@@ -176,30 +275,48 @@ void HelloWorld::insertMainMenu() {
         this->addChild(rty, 1);
     }
 
-    printRect(colChangeRect);
+    printRect(halfRect);
+    printRect(creditRect);
 #endif
 
-    auto add = loadMenuItem(("add.png"), addRect);
-    auto close = loadMenuItem(("close.png"), closeRect);
-    auto refresh = loadMenuItem(("refresh.png"), refreshRect);
-    auto dice = loadMenuItem(("dice.png"), dieRect);
-    auto colChange = loadMenuItem(("colChange.png"), colChangeRect);
-    auto fire = loadMenuItem(("fire.png"), fireRect);
-    auto light = loadMenuItem(("light.png"), lightRect);
+    // Center items
+    auto add = loadMenuItem("add.png", addRect);
+    auto close = loadMenuItem("close.png", closeRect);
+    auto refresh = loadMenuItem("refresh.png", refreshRect);
+    auto dice = loadMenuItem("dice.png", dieRect);
+    auto colChange = loadMenuItem("colChange.png", colChangeRect);
+    auto fire = loadMenuItem("fire.png", fireRect);
+    auto light = loadMenuItem("light.png", lightRect);
 
-    _menu = Menu::create(add, close, refresh, dice, colChange, fire, light, NULL);
-    _menu->setPosition(vOrig.x, vOrig.y);
+    // Right items
+    auto mobile = loadMenuItem("mobile.png", mobileRect);
+    auto usage = loadMenuLabel(usageLabel, usageRect);
+    auto inst = loadMenuLabel(instLabel, instRect);
+
+    // Left items
+    auto credit = loadMenuLabel(creditLabel, creditRect);
+    auto info = loadMenuLabel(infoLabel, infoRect);
+    auto built = loadMenuLabel(builtLabel, builtRect);
+    auto ink = loadMenuItem("inkscape.png", inkRect);
+    auto coco = loadMenuItem("cocos.png", cocoRect);
+    auto blender = loadMenuItem("blender.png", blenderRect);
+    auto copy = loadMenuLabel(copyLabel, copyRect);
+
+    _menu = Menu::create(add, close, refresh, dice, colChange, fire, light,
+                         mobile, usage, inst, credit, info, built, ink, coco,
+                         blender, copy, NULL);
+    _menu->setPosition(vOrig.x - halfRect.size.width, vOrig.y);
     this->addChild(_menu, 1);
-    _menuD.setMenu(_menu);
-    //_menu.swipeDownwards();
-    //
+    _menuD.setNodeAndSize(_menu, halfRect);
+
+#if (CC_TARGET_PLATFORM == CC_PLATFORM_LINUX)
     auto keyListener = EventListenerKeyboard::create();
     keyListener->onKeyReleased = [=](EventKeyboard::KeyCode kc, Event *event) {
         if (kc == EventKeyboard::KeyCode::KEY_L) {
             _menuD.swipeDownwards();
-        } else if (kc == EventKeyboard::KeyCode::KEY_K) {
-            _menuD.swipeRight();
         } else if (kc == EventKeyboard::KeyCode::KEY_I) {
+            _menuD.swipeRight();
+        } else if (kc == EventKeyboard::KeyCode::KEY_K) {
             _menuD.swipeLeft();
         } else if (kc == EventKeyboard::KeyCode::KEY_J) {
             _menuD.swipeUpwards();
@@ -207,15 +324,16 @@ void HelloWorld::insertMainMenu() {
     };
 
     _eventDispatcher->addEventListenerWithSceneGraphPriority(keyListener, this);
-
-    /*auto swipeEventListener = EventListenerTouchOneByOne::create();
+#else
+    auto swipeEventListener = EventListenerTouchOneByOne::create();
     swipeEventListener->onTouchBegan =
         CC_CALLBACK_2(HelloWorld::onTouchBegan, this);
     swipeEventListener->onTouchEnded =
         CC_CALLBACK_2(HelloWorld::onTouchEnded, this);
 
     _eventDispatcher->addEventListenerWithSceneGraphPriority(swipeEventListener,
-                                                             this);*/
+                                                             this);
+#endif
 }
 
 #ifdef COCOS2D_DEBUG
@@ -467,7 +585,7 @@ void HelloWorld::onTouchEnded(Touch *touch, Event *event) {
     const auto dx = end.x - start.x;
     const auto dy = end.y - start.y;
     const auto length = sqrt(dx * dx + dy * dy);
-    const auto verticalSwipe = abs(dy) > abs(dx);
+    const auto verticalSwipe = abs(dx) > abs(dy);
 
     delete _touchBeginLoc;
     _touchBeginLoc = nullptr;
@@ -476,7 +594,7 @@ void HelloWorld::onTouchEnded(Touch *touch, Event *event) {
         return;
     }
 
-    if (verticalSwipe && dy > 0) {
+    if (verticalSwipe && dy < 0) {
         // upward
         _menuD.swipeUpwards();
     } else if (verticalSwipe) {
