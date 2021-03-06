@@ -37,6 +37,7 @@
 #include "physics3d/CCPhysics3DObject.h"
 
 #include "MenuState.h"
+#include "CCZoomMenuImage.h"
 #include <vector>
 
 #define TG3_GRAVITY_EARTH (9.80665f)
