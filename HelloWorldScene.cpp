@@ -50,30 +50,6 @@ bool HelloWorld::init() {
     auto visibleSize = Director::getInstance()->getVisibleSize();
     auto origin = Director::getInstance()->getVisibleOrigin();
 
-    /////////////////////////////
-    // 2. add a menu item with "X" image, which is clicked to quit the program
-    //    you may modify it.
-
-    // add a "close" icon to exit the progress. it's an autorelease object
-    auto closeItem = MenuItemImage::create(
-        "CloseNormal.png", "CloseSelected.png",
-        CC_CALLBACK_1(HelloWorld::menuCloseCallback, this));
-
-    if (closeItem == nullptr || closeItem->getContentSize().width <= 0 ||
-        closeItem->getContentSize().height <= 0) {
-        problemLoading("'CloseNormal.png' and 'CloseSelected.png'");
-    } else {
-        float x = origin.x + visibleSize.width -
-                  closeItem->getContentSize().width / 2;
-        float y = origin.y + closeItem->getContentSize().height / 2;
-        closeItem->setPosition(Vec2(x, y));
-    }
-
-    // create menu, it's an autorelease object
-    auto menu = Menu::create(closeItem, NULL);
-    menu->setPosition(Vec2::ZERO);
-    this->addChild(menu, 1);
-
     insertMainMenu();
 
 #ifdef COCOS2D_DEBUG
@@ -124,8 +100,8 @@ void HelloWorld::insertMainMenu() {
     auto botRectOffset = Vec2(0, w1_3);
     auto botRectSize = Size(w1_3, w1_3);
 
-    auto addRect = Rect(botRectOrigin, botRectSize);
-    auto closeRect = Rect(botRectOrigin + botRectOffset, botRectSize);
+    auto closeRect = Rect(botRectOrigin, botRectSize);
+    auto addRect = Rect(botRectOrigin + botRectOffset, botRectSize);
     auto refreshRect = Rect(botRectOrigin + 2 * botRectOffset, botRectSize);
 
     // Calculate the dice bounding rect
@@ -227,7 +203,7 @@ void HelloWorld::insertMainMenu() {
                              "Artwork : Siddharth\n"
                              "Design : Siddharth\n\n"
                              "SFX @ <source>\n"
-                             "Textures @ <source>\n\n"
+                             "Textures @ FantasyStock|10ravens@DeviantArt\n"
                              "Contact : SiddharthJSingh@protonmail.com",
                              TextHAlignment::CENTER);
     auto builtLabel =
@@ -237,7 +213,8 @@ void HelloWorld::insertMainMenu() {
                                           "All rights reserved",
                                           TextHAlignment::CENTER);
 
-    auto loadMenuItem = [](std::string loc, Rect &pos) -> MenuItem * {
+    auto loadMenuItem = [](std::string loc, Rect &pos,
+                           bool enabled = true) -> MenuItem * {
         auto imgLoc = "menuIcons/" + loc;
         auto mii = MenuItemImage::create(imgLoc, imgLoc);
         mii->setRotation(-90);
@@ -247,6 +224,7 @@ void HelloWorld::insertMainMenu() {
             problemLoading(loc.c_str());
         } else {
             mii->setPosition(pos.getMidX(), pos.getMidY());
+            mii->setEnabled(enabled);
         }
 
         return mii;
@@ -259,6 +237,62 @@ void HelloWorld::insertMainMenu() {
 
         return mli;
     };
+
+    // Parchment background should be 3xhalfRects
+    auto threeHalfRects = halfRect;
+    threeHalfRects.size.height = 3 * halfRect.size.height;
+    threeHalfRects.origin.y = halfRect.origin.y - halfRect.size.height;
+
+    using cocos2d::backend::SamplerAddressMode;
+    using cocos2d::backend::SamplerFilter;
+    auto texParams = Texture2D::TexParams{
+        SamplerFilter::LINEAR, SamplerFilter::LINEAR,
+        SamplerAddressMode::REPEAT, SamplerAddressMode::REPEAT};
+    auto menuBGSprite = Sprite::create("menuIcons/parchment_seamless.jpg");
+    if (menuBGSprite == nullptr || menuBGSprite->getContentSize().width < 0 ||
+        menuBGSprite->getContentSize().height <= 0) {
+        problemLoading("'parchment_sealmess.jpg'");
+    }
+
+    menuBGSprite->getTexture()->setTexParameters(texParams);
+    menuBGSprite->setTextureRect(threeHalfRects);
+
+    auto menuBG = MenuItemSprite::create(menuBGSprite, menuBGSprite);
+    menuBG->setPosition(threeHalfRects.getMidX(), threeHalfRects.getMidY());
+    menuBG->setEnabled(false);
+
+    // Center items
+    auto close = loadMenuItem("close.png", closeRect);
+    close->setCallback(CC_CALLBACK_1(HelloWorld::menuCloseCallback, this));
+    auto add = loadMenuItem("add.png", addRect);
+    auto refresh = loadMenuItem("refresh.png", refreshRect);
+    auto dice = loadMenuItem("dice.png", dieRect, false);
+    auto colChange = loadMenuItem("colChange.png", colChangeRect);
+    auto fire = loadMenuItem("fire.png", fireRect);
+    auto light = loadMenuItem("light.png", lightRect);
+
+    // Right items
+    auto mobile = loadMenuItem("mobile.png", mobileRect, false);
+    auto usage = loadMenuLabel(usageLabel, usageRect);
+    auto inst = loadMenuLabel(instLabel, instRect);
+
+    // Left items
+    auto credit = loadMenuLabel(creditLabel, creditRect);
+    auto info = loadMenuLabel(infoLabel, infoRect);
+    auto built = loadMenuLabel(builtLabel, builtRect);
+    auto ink = loadMenuItem("inkscape.png", inkRect, false);
+    auto coco = loadMenuItem("cocos.png", cocoRect, false);
+    auto blender = loadMenuItem("blender.png", blenderRect, false);
+    auto copy = loadMenuLabel(copyLabel, copyRect);
+
+    //_menu = Menu::create(add, close, refresh, dice, colChange, fire,
+    _menu = Menu::create(menuBG, add, close, refresh, dice, colChange, fire,
+                         light, mobile, usage, inst, credit, info, built, ink,
+                         coco, blender, copy, NULL);
+    _menu->setPosition(vOrig.x - halfRect.size.width, vOrig.y);
+    //_menu->setPosition(vOrig.x , vOrig.y);
+    this->addChild(_menu, 1);
+    _menuD.setNodeAndSize(_menu, halfRect);
 
 #ifdef COCOS2D_DEBUG
     auto showRect = dieRect;
@@ -275,39 +309,10 @@ void HelloWorld::insertMainMenu() {
         this->addChild(rty, 1);
     }
 
-    printRect(halfRect);
-    printRect(creditRect);
+    printRect(closeRect);
+    Rect cRect = close->rect();
+    printRect(cRect);
 #endif
-
-    // Center items
-    auto add = loadMenuItem("add.png", addRect);
-    auto close = loadMenuItem("close.png", closeRect);
-    auto refresh = loadMenuItem("refresh.png", refreshRect);
-    auto dice = loadMenuItem("dice.png", dieRect);
-    auto colChange = loadMenuItem("colChange.png", colChangeRect);
-    auto fire = loadMenuItem("fire.png", fireRect);
-    auto light = loadMenuItem("light.png", lightRect);
-
-    // Right items
-    auto mobile = loadMenuItem("mobile.png", mobileRect);
-    auto usage = loadMenuLabel(usageLabel, usageRect);
-    auto inst = loadMenuLabel(instLabel, instRect);
-
-    // Left items
-    auto credit = loadMenuLabel(creditLabel, creditRect);
-    auto info = loadMenuLabel(infoLabel, infoRect);
-    auto built = loadMenuLabel(builtLabel, builtRect);
-    auto ink = loadMenuItem("inkscape.png", inkRect);
-    auto coco = loadMenuItem("cocos.png", cocoRect);
-    auto blender = loadMenuItem("blender.png", blenderRect);
-    auto copy = loadMenuLabel(copyLabel, copyRect);
-
-    _menu = Menu::create(add, close, refresh, dice, colChange, fire, light,
-                         mobile, usage, inst, credit, info, built, ink, coco,
-                         blender, copy, NULL);
-    _menu->setPosition(vOrig.x - halfRect.size.width, vOrig.y);
-    this->addChild(_menu, 1);
-    _menuD.setNodeAndSize(_menu, halfRect);
 
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_LINUX)
     auto keyListener = EventListenerKeyboard::create();
@@ -396,15 +401,14 @@ void HelloWorld::insertDice() {
     rbDes.mass = 1.f;
     rbDes.shape = Physics3DShape::createBox(Vec3(0.5f, 0.5f, 0.5f));
     rbDes.disableSleep = true;
-    auto sprite = PhysicsSprite3D::create("box.c3t", &rbDes);
-    auto material =
-        Material::createWithFilename("materials/glossyGlass.material");
-    sprite->setMaterial(material);
+    auto sprite = PhysicsSprite3D::create("models/box.c3t", &rbDes);
 
     if (sprite == nullptr) {
-        problemLoading("'box.c3t'");
+        problemLoading("'models/box.c3t'");
     } else {
-
+        auto material =
+            Material::createWithFilename("materials/glossyGlass.material");
+        sprite->setMaterial(material);
         dice = static_cast<Physics3DRigidBody *>(sprite->getPhysicsObj());
         dice->setLinearFactor(Vec3::ONE);
         // dice->setAngularVelocity(Vec3(1, 1, 0));
@@ -426,14 +430,22 @@ void HelloWorld::addQBox() {
     auto quads = getQuadPlanes();
 
     auto colCb = [](const Physics3DObject *ci) {
-        AudioEngine::play2d("hitWall.mp3", false, 1.0);
+        AudioEngine::play2d("sfx/hitWall.mp3", false, 1.0);
     };
 
-    auto floor = Sprite3D::create("flat.c3t");
+    auto floor = Sprite3D::create("models/flat.c3t");
     if (floor == nullptr) {
-        problemLoading("'flat.c3t'");
+        problemLoading("'models/flat.c3t'");
     } else {
-        // floor->setRotation3D(Vec3(90, 0, 0));
+        auto material =
+            Material::createWithFilename("materials/repeat.material");
+        auto ps =
+            material->getTechnique()->getPassByIndex(0)->getProgramState();
+        auto scale = ps->getUniformLocation("scale");
+        float uScale{3};
+        ps->setUniform(scale, &uScale, sizeof(float));
+        floor->setMaterial(material);
+
         floor->setPosition3D(Vec3(-15, 0, 0));
         floor->setScale(0.75f);
         this->addChild(floor);
@@ -565,6 +577,7 @@ std::vector<std::vector<cocos2d::Vec3>> HelloWorld::getQuadPlanes() {
 
 void HelloWorld::menuCloseCallback(Ref *pSender) {
     // Close the cocos2d-x game scene and quit the application
+    // std::cout<<"clicked"<<std::endl;
     Director::getInstance()->end();
 }
 

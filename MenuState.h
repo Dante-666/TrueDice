@@ -27,7 +27,6 @@ class MenuState {
 
     void setNode(cocos2d::Menu *menu, cocos2d::Rect& visRect) {
 	_menu = menu; 
-	CC_SAFE_RETAIN(_menu);
 	setMoveToDims(visRect);
     };
     cocos2d::Menu *getMenu() { return _menu; };
