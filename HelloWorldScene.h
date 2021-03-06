@@ -38,6 +38,7 @@
 
 #include "MenuState.h"
 #include "CCZoomMenuImage.h"
+#include "renderer/backend/ProgramState.h"
 #include <vector>
 
 #define TG3_GRAVITY_EARTH (9.80665f)
@@ -74,6 +75,9 @@ class HelloWorld : public cocos2d::Scene {
 #ifdef COCOS2D_DEBUG
     // display acceleration data for debug
     void insertDebugLabels();
+    
+    // write out the uniformData for mobile debugging
+    void drawUniformData(cocos2d::backend::ProgramState* ps);
 #endif
 
     // include physics and camera node

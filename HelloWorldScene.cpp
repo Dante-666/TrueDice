@@ -294,26 +294,6 @@ void HelloWorld::insertMainMenu() {
     this->addChild(_menu, 1);
     _menuD.setNodeAndSize(_menu, halfRect);
 
-#ifdef COCOS2D_DEBUG
-    auto showRect = dieRect;
-    auto rty = Label::create();
-    rty->retain();
-    char buffer[40] = {0};
-    sprintf(buffer, "Rect : (%1.2f, %1.2f) , (%1.2f, %1.2f)", showRect.origin.x,
-            showRect.origin.y, showRect.size.width, showRect.size.height);
-    rty->initWithTTF(buffer, "fonts/Marker Felt.ttf", 24);
-    if (rty == nullptr) {
-        problemLoading("'fonts/Marker Felt.ttf'");
-    } else {
-        rty->setPosition(Vec2(1200, 100));
-        this->addChild(rty, 1);
-    }
-
-    printRect(closeRect);
-    Rect cRect = close->rect();
-    printRect(cRect);
-#endif
-
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_LINUX)
     auto keyListener = EventListenerKeyboard::create();
     keyListener->onKeyReleased = [=](EventKeyboard::KeyCode kc, Event *event) {
@@ -366,6 +346,29 @@ void HelloWorld::insertDebugLabels() {
     } else {
         gravityLabel->setPosition(Vec2(150, 150));
         this->addChild(gravityLabel, 1);
+    }
+}
+
+void HelloWorld::drawUniformData(cocos2d::backend::ProgramState *ps) {
+    using cocos2d::backend::ShaderStage;
+    auto uniMap =
+        ps->getProgram()->getAllActiveUniformInfo(ShaderStage::VERTEX);
+    auto ind = 0;
+    for (auto it = uniMap.begin(); it != uniMap.end(); ++it) {
+        auto scale = it->second;
+        auto uniLabel = Label::create();
+        uniLabel->retain();
+        char buffer[80] = {0};
+        sprintf(buffer, "%s : L: %d + O: %d", it->first.c_str(), scale.location,
+                scale.bufferOffset);
+        uniLabel->initWithTTF(buffer, "fonts/Marker Felt.ttf", 24);
+        uniLabel->setColor(Color3B(128, 128, 128));
+        if (uniLabel == nullptr) {
+            problemLoading("'fonts/Marker Felt.ttf'");
+        } else {
+            uniLabel->setPosition(Vec2(1200, 900 - ind++ * 100));
+            this->addChild(uniLabel, 1);
+        }
     }
 }
 #endif
@@ -445,12 +448,10 @@ void HelloWorld::addQBox() {
         float uScale{3};
         ps->setUniform(scale, &uScale, sizeof(float));
 
-        auto x = ps->getUniformLocation("u_sampler0");
-        std::cout << x.location[0] << ":" << x.location[1] << "Shader"
-                  << (uint32_t)x.shaderStage << std::endl;
+#ifdef COCOS2D_DEBUG
+        //drawUniformData(ps);
+#endif
         floor->setMaterial(material);
-	/*floor->setTexture("textures/wood_floor.jpg");
-	std::cout << floor->getMesh()->getTexture()->getPath() << std::endl;*/
 
         floor->setPosition3D(Vec3(-15, 0, 0));
         floor->setScale(0.75f);
