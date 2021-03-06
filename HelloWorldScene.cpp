@@ -25,6 +25,7 @@
 #include "HelloWorldScene.h"
 #include "renderer/backend/Types.h"
 #include <iostream>
+#include <new>
 #include <vector>
 
 USING_NS_CC;
@@ -380,7 +381,7 @@ void HelloWorld::initPhysicsAndCamera() {
         world->setDebugDrawEnable(true);
 #endif
 
-    world->setGravity(Vec3(0, 0, 0));
+    world->setGravity(Vec3(0, 0, -10));
 
     Size size = Director::getInstance()->getWinSize();
     auto camera = Camera::createPerspective(30.0f, size.width / size.height,
@@ -443,7 +444,13 @@ void HelloWorld::addQBox() {
         auto scale = ps->getUniformLocation("scale");
         float uScale{3};
         ps->setUniform(scale, &uScale, sizeof(float));
+
+        auto x = ps->getUniformLocation("u_sampler0");
+        std::cout << x.location[0] << ":" << x.location[1] << "Shader"
+                  << (uint32_t)x.shaderStage << std::endl;
         floor->setMaterial(material);
+	/*floor->setTexture("textures/wood_floor.jpg");
+	std::cout << floor->getMesh()->getTexture()->getPath() << std::endl;*/
 
         floor->setPosition3D(Vec3(-15, 0, 0));
         floor->setScale(0.75f);
@@ -459,9 +466,11 @@ void HelloWorld::addQBox() {
         rbDes.shape = Physics3DShape::createConvexHull(quad.data(), 4);
         colliderDes.shape = rbDes.shape;
         colliderDes.isTrigger = true;
-        auto plane = PhysicsSprite3D::create("models/box.c3t", &rbDes);
         auto collider = Physics3DCollider::create(&colliderDes);
         auto component = Physics3DComponent::create(collider);
+
+        // Add this to a dummy node since Physics3DRigidBody will already
+        // have a RigidBody component
         auto node = Node::create();
         node->addComponent(component);
         node->setCameraMask((unsigned short)CameraFlag::USER1);
@@ -469,22 +478,28 @@ void HelloWorld::addQBox() {
         this->addChild(node);
 
         collider->onTriggerEnter = colCb;
+
+        auto plane = new (std::nothrow) PhysicsSprite3D();
         if (plane == nullptr) {
-            problemLoading("'models/box.c3t'");
+            printf("Error while creating PhysicsSprite3D\n");
         } else {
-            auto rigidBody =
-                static_cast<Physics3DRigidBody *>(plane->getPhysicsObj());
+            auto rigidBody = Physics3DRigidBody::create(&rbDes);
+            // static_cast<Physics3DRigidBody *>(plane->getPhysicsObj());
             rigidBody->setLinearFactor(Vec3::ONE);
             rigidBody->setAngularVelocity(Vec3(0, 0, 0));
             rigidBody->setCcdMotionThreshold(0.5f);
             rigidBody->setCcdSweptSphereRadius(0.4f);
+            auto rbComponent = Physics3DComponent::create(rigidBody);
+            plane->addComponent(rbComponent);
+            plane->setContentSize(plane->getBoundingBox().size);
+            plane->autorelease();
 
             this->addChild(plane);
 
-            plane->syncNodeToPhysics();
-            plane->setSyncFlag(Physics3DComponent::PhysicsSyncFlag::
-                                   PHYSICS_TO_NODE); // sync node to
-                                                     // physics
+            rbComponent->syncNodeToPhysics();
+            rbComponent->setSyncFlag(Physics3DComponent::PhysicsSyncFlag::
+                                         PHYSICS_TO_NODE); // sync node to
+                                                           // physics
             plane->setCameraMask((unsigned short)CameraFlag::USER1);
         }
     }
