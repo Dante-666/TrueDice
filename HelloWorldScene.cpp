@@ -57,13 +57,12 @@ bool HelloWorld::init() {
 #endif
 
     initPhysicsAndCamera();
-
-    insertDice();
-
     // generic idea would be to take the camera furstum and intersect it with
     // two planes and figure out the extremities of the box and calculate the
     // actual box
     addQBox();
+
+    insertDice();
 
     createAccelerationCallbacks();
 
@@ -216,7 +215,7 @@ void HelloWorld::insertMainMenu() {
     auto loadMenuItem = [](std::string loc, Rect &pos,
                            bool enabled = true) -> MenuItem * {
         auto imgLoc = "menuIcons/" + loc;
-        auto mii = MenuItemImage::create(imgLoc, imgLoc);
+        auto mii = MenuItemZoomImage::create(imgLoc);
         mii->setRotation(-90);
 
         if (mii == nullptr || mii->getContentSize().width <= 0 ||
@@ -460,7 +459,7 @@ void HelloWorld::addQBox() {
         rbDes.shape = Physics3DShape::createConvexHull(quad.data(), 4);
         colliderDes.shape = rbDes.shape;
         colliderDes.isTrigger = true;
-        auto plane = PhysicsSprite3D::create("plane.c3t", &rbDes);
+        auto plane = PhysicsSprite3D::create("models/box.c3t", &rbDes);
         auto collider = Physics3DCollider::create(&colliderDes);
         auto component = Physics3DComponent::create(collider);
         auto node = Node::create();
@@ -471,7 +470,7 @@ void HelloWorld::addQBox() {
 
         collider->onTriggerEnter = colCb;
         if (plane == nullptr) {
-            problemLoading("'plane.c3t'");
+            problemLoading("'models/box.c3t'");
         } else {
             auto rigidBody =
                 static_cast<Physics3DRigidBody *>(plane->getPhysicsObj());
