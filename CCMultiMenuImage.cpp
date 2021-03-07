@@ -3,18 +3,13 @@
 #include "2d/CCActionInterval.h"
 #include "2d/CCSprite.h"
 
-using cocos2d::Action;
-using cocos2d::ScaleTo;
-using cocos2d::FadeOut;
-using cocos2d::FadeIn;
-using cocos2d::Sprite;
-using cocos2d::Vec2;
+NS_CC_BEGIN
 
 const unsigned int kMultiActionTag = 0xc0c05012;
 
 MenuItemMultiImage *MenuItemMultiImage::create(const std::string &img) {
     MenuItemMultiImage *ret = new (std::nothrow) MenuItemMultiImage();
-    if (ret && ret->insertImage(img)) {
+    if (ret && ret->insertImage(img) && ret->insertColors()) {
         ret->autorelease();
         return ret;
     }
@@ -48,12 +43,20 @@ bool MenuItemMultiImage::insertImage(const std::string &img) {
     return true;
 };
 
+bool MenuItemMultiImage::insertColors() {
+    // Sequence should be RGB, starting from R
+    _colorList.push_back(Color4F(Color3B(0, 240, 40)));
+    _colorList.push_back(Color4F(Color3B(0, 40, 240)));
+    _colorList.push_back(Color4F(Color3B(240, 40, 0)));
+    return true;
+};
+
 bool MenuItemMultiImage::activateNextImage() {
     if (_enabled) {
         CC_ASSERT(_imgList.size() >= 1);
-	Action *fadeOut = FadeOut::create(0.2f);
-	Action *fadeIn = FadeIn::create(0.15f);
-	_imgList[_currIdx]->runAction(fadeOut);
+        Action *fadeOut = FadeOut::create(0.2f);
+        Action *fadeIn = FadeIn::create(0.15f);
+        _imgList[_currIdx]->runAction(fadeOut);
         // Implement circularity
         if (_currIdx + 1 >= _imgList.size()) {
             _currIdx = 0;
@@ -61,11 +64,12 @@ bool MenuItemMultiImage::activateNextImage() {
             _currIdx++;
         }
         _imgList[_currIdx]->runAction(fadeIn);
-	return true;
+        return true;
     }
     return false;
 }
 
+const Color4F &MenuItemMultiImage::getColor() { return _colorList[_currIdx]; }
 
 void MenuItemMultiImage::selected() {
     if (_enabled) {
@@ -93,3 +97,5 @@ void MenuItemMultiImage::unselected() {
         this->runAction(zoomAction);
     }
 }
+
+NS_CC_END

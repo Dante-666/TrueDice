@@ -1,6 +1,6 @@
 #include "2d/CCMenuItem.h"
 
-using cocos2d::MenuItem;
+NS_CC_BEGIN
 
 class MenuItemZoomImage : public MenuItem {
     CC_CONSTRUCTOR_ACCESS : MenuItemZoomImage() {}
@@ -23,3 +23,5 @@ class MenuItemZoomImage : public MenuItem {
   private:
     CC_DISALLOW_COPY_AND_ASSIGN(MenuItemZoomImage);
 };
+
+NS_CC_END

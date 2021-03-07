@@ -26,6 +26,7 @@
 #define __HELLOWORLD_SCENE_H__
 
 #include "2d/CCLabelAtlas.h"
+#include "2d/CCMenuItem.h"
 #include "CCEvent.h"
 #include "CCEventCustom.h"
 #include "CCEventListenerCustom.h"
@@ -36,9 +37,9 @@
 #include "physics3d/CCPhysics3D.h"
 #include "physics3d/CCPhysics3DObject.h"
 
-#include "MenuState.h"
-#include "CCZoomMenuImage.h"
 #include "CCMultiMenuImage.h"
+#include "CCZoomMenuImage.h"
+#include "MenuState.h"
 #include "renderer/backend/ProgramState.h"
 #include <vector>
 
@@ -48,7 +49,8 @@ class HelloWorld : public cocos2d::Scene {
     cocos2d::Mat4 android2Game;
     // This should be a vector of dices when multiple
     // will be involved
-    cocos2d::Physics3DRigidBody *dice;
+    std::vector<cocos2d::Physics3DRigidBody *> dices;
+    cocos2d::MenuItemMultiImage *diceUI;
 
 #ifdef COCOS2D_DEBUG
     cocos2d::Label *accelLabel;
@@ -59,10 +61,10 @@ class HelloWorld : public cocos2d::Scene {
 
     // Menu specific items
     MenuDelegate _menuD;
-    cocos2d::Menu* _menu;
+    cocos2d::Menu *_menu;
 
     // Store initial touch location
-    cocos2d::Vec2* _touchBeginLoc;
+    cocos2d::Vec2 *_touchBeginLoc;
     float _minSwipeLen = 200;
 
   public:
@@ -76,9 +78,9 @@ class HelloWorld : public cocos2d::Scene {
 #ifdef COCOS2D_DEBUG
     // display acceleration data for debug
     void insertDebugLabels();
-    
+
     // write out the uniformData for mobile debugging
-    void drawUniformData(cocos2d::backend::ProgramState* ps);
+    void drawUniformData(cocos2d::backend::ProgramState *ps);
 #endif
 
     // include physics and camera node
@@ -86,7 +88,7 @@ class HelloWorld : public cocos2d::Scene {
 
     // right now manipulate the member, make this return
     // a rigid body so that vector can be maintained later
-    void insertDice();
+    void insertDice(const cocos2d::Color4F &color);
 
     // add a box composed with places
     void addQBox();
