@@ -63,7 +63,7 @@ bool HelloWorld::init() {
     // actual box
     addQBox();
 
-    insertDice();
+    insertDice(diceUI->getColor());
 
     createAccelerationCallbacks();
 
@@ -280,9 +280,12 @@ void HelloWorld::insertMainMenu() {
     close->setCallback(CC_CALLBACK_1(HelloWorld::menuCloseCallback, this));
     auto add = loadMenuItem("add.png", addRect);
     auto refresh = loadMenuItem("refresh.png", refreshRect);
-    auto dice = loadMenuItemMulti("dice", dieRect);
-    dice->setCallback(
-        CC_CALLBACK_0(MenuItemMultiImage::activateNextImage, dice));
+    diceUI = loadMenuItemMulti("dice", dieRect);
+    diceUI->setCallback(
+        CC_CALLBACK_0(MenuItemMultiImage::activateNextImage, diceUI));
+    add->setCallback(
+        std::bind(&HelloWorld::insertDice, this,
+                  std::bind(&MenuItemMultiImage::getColor, diceUI)));
 
     auto fire = loadMenuItem("fire.png", fireRect);
     auto light = loadMenuItem("light.png", lightRect);
@@ -302,9 +305,9 @@ void HelloWorld::insertMainMenu() {
     auto copy = loadMenuLabel(copyLabel, copyRect);
 
     //_menu = Menu::create(add, close, refresh, dice, colChange, fire,
-    _menu = Menu::create(menuBG, add, close, refresh, dice, fire, light, mobile,
-                         usage, inst, credit, info, built, ink, coco, blender,
-                         copy, NULL);
+    _menu = Menu::create(menuBG, add, close, refresh, diceUI, fire, light,
+                         mobile, usage, inst, credit, info, built, ink, coco,
+                         blender, copy, NULL);
     _menu->setPosition(vOrig.x - halfRect.size.width, vOrig.y);
     //_menu->setPosition(vOrig.x , vOrig.y);
     this->addChild(_menu, 1);
@@ -413,7 +416,10 @@ void HelloWorld::initPhysicsAndCamera() {
     this->setPhysics3DDebugCamera(camera);
 }
 
-void HelloWorld::insertDice() {
+void HelloWorld::insertDice(const Color4F &color) {
+    if (dices.size() >= 10) {
+        return;
+    }
     Physics3DRigidBodyDes rbDes;
 
     rbDes.originalTransform.rotateY(M_PI / 6);
@@ -427,19 +433,20 @@ void HelloWorld::insertDice() {
     } else {
         auto material =
             Material::createWithFilename("materials/colorDice.material");
-        Color4F red(Color3B(0, 40, 240));
         auto ps =
             material->getTechnique()->getPassByIndex(0)->getProgramState();
         auto loc = ps->getUniformLocation("dice_color");
 
-        ps->setUniform(loc, &red, sizeof(Color4F));
+        ps->setUniform(loc, &color, sizeof(Color4F));
         sprite->setMaterial(material);
 
-        dice = static_cast<Physics3DRigidBody *>(sprite->getPhysicsObj());
+        auto dice = static_cast<Physics3DRigidBody *>(sprite->getPhysicsObj());
         dice->setLinearFactor(Vec3::ONE);
         dice->setAngularVelocity(Vec3(1, 1, 0));
         dice->setCcdMotionThreshold(0.1f);
         dice->setCcdSweptSphereRadius(0.1f);
+
+        dices.push_back(dice);
         // add the sprite as a child to this layer
         this->addChild(sprite);
 
@@ -678,7 +685,9 @@ void HelloWorld::onAcceleration(Acceleration *accel, Event *event) {
     // the impulses are too wild,
     // scale these down and also negate the world gravity while applying this
     // for more realistic behavior
-    dice->applyCentralImpulse(android_l_accel * -2);
+    for (auto dice : dices) {
+        dice->applyCentralImpulse(android_l_accel * -2);
+    }
 }
 
 void HelloWorld::onGravity(EventCustom *event) {

@@ -3,10 +3,7 @@
 #include "2d/CCActionInterval.h"
 #include "2d/CCSprite.h"
 
-using cocos2d::Action;
-using cocos2d::ScaleTo;
-using cocos2d::Sprite;
-using cocos2d::Vec2;
+NS_CC_BEGIN
 
 const unsigned int kZoomActionTag = 0xc0c05012;
 
@@ -71,3 +68,5 @@ void MenuItemZoomImage::unselected() {
         this->runAction(zoomAction);
     }
 }
+
+NS_CC_END
