@@ -38,6 +38,7 @@
 
 #include "MenuState.h"
 #include "CCZoomMenuImage.h"
+#include "CCMultiMenuImage.h"
 #include "renderer/backend/ProgramState.h"
 #include <vector>
 
@@ -110,6 +111,8 @@ class HelloWorld : public cocos2d::Scene {
 
     // a selector callback
     void menuCloseCallback(cocos2d::Ref *pSender);
+
+    void test_callback();
 
     // implement the "static create()" method manually
     CREATE_FUNC(HelloWorld);
