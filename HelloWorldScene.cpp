@@ -105,22 +105,16 @@ void HelloWorld::insertMainMenu() {
     auto refreshRect = Rect(botRectOrigin + 2 * botRectOffset, botRectSize);
 
     // Calculate the dice bounding rect
-    auto w3_5 = halfRect.size.height * 3 / 5;
-    auto dieRect = Rect(orig, Size(botRectOrigin.x, w3_5));
+    auto h4_5 = halfRect.size.height * 4 / 5;
+    auto dieRect = Rect(orig, Size(botRectOrigin.x, h4_5));
 
     // Paricle effect
-    auto pEffSize = Size(dieRect.size.width / 3,
-                         (halfRect.size.height - dieRect.size.height) / 2);
-    auto pEffOrigin =
-        Vec2(dieRect.size.width - pEffSize.width, dieRect.size.height);
-    auto pEffOffset = Vec2(0, pEffSize.height);
+    auto pEffSize = Size(dieRect.size.width / 2,
+                         (halfRect.size.height - dieRect.size.height));
+    auto pEffOrigin = Vec2(0, dieRect.size.height);
+    auto pEffOffset = Vec2(pEffSize.width, 0);
     auto fireRect = Rect(pEffOrigin, pEffSize);
     auto lightRect = Rect(pEffOrigin + pEffOffset, pEffSize);
-
-    // Likewise for the colorChange icon
-    auto colChangeSize = Size(dieRect.size.width - pEffSize.width,
-                              halfRect.size.height - dieRect.size.height);
-    auto colChangeRect = Rect(orig + Vec2(0, w3_5), colChangeSize);
 
     // Mobile Rect
     auto mobileSize = halfRect.size;
@@ -213,7 +207,7 @@ void HelloWorld::insertMainMenu() {
                                           "All rights reserved",
                                           TextHAlignment::CENTER);
 
-    auto loadMenuItem = [](std::string loc, Rect &pos,
+    auto loadMenuItem = [](const std::string &loc, Rect &pos,
                            bool enabled = true) -> MenuItem * {
         auto imgLoc = "menuIcons/" + loc;
         auto mii = MenuItemZoomImage::create(imgLoc);
@@ -230,12 +224,32 @@ void HelloWorld::insertMainMenu() {
         return mii;
     };
 
-    auto loadMenuLabel = [](Label *label, Rect &pos) -> MenuItem * {
+    auto loadMenuLabel = [](Label *label, const Rect &pos) -> MenuItem * {
         auto mli = MenuItemLabel::create(label);
         mli->setRotation(-90);
         mli->setPosition(pos.getMidX(), pos.getMidY());
 
         return mli;
+    };
+
+    // This is for dice object only
+    auto loadMenuItemMulti = [](const std::string &loc,
+                                const Rect &pos) -> MenuItemMultiImage * {
+        auto mim = MenuItemMultiImage::create("menuIcons/" + loc + "G.png");
+        mim->insertImage("menuIcons/" + loc + "B.png");
+        mim->insertImage("menuIcons/" + loc + "R.png");
+
+        mim->setRotation(-90);
+
+        if (mim == nullptr || mim->getContentSize().width <= 0 ||
+            mim->getContentSize().height <= 0) {
+            problemLoading(loc.c_str());
+        } else {
+            mim->setPosition(pos.getMidX(), pos.getMidY());
+            mim->setEnabled(true);
+        }
+
+        return mim;
     };
 
     // Parchment background should be 3xhalfRects
@@ -266,8 +280,10 @@ void HelloWorld::insertMainMenu() {
     close->setCallback(CC_CALLBACK_1(HelloWorld::menuCloseCallback, this));
     auto add = loadMenuItem("add.png", addRect);
     auto refresh = loadMenuItem("refresh.png", refreshRect);
-    auto dice = loadMenuItem("dice.png", dieRect, false);
-    auto colChange = loadMenuItem("colChange.png", colChangeRect);
+    auto dice = loadMenuItemMulti("dice", dieRect);
+    dice->setCallback(
+        CC_CALLBACK_0(MenuItemMultiImage::activateNextImage, dice));
+
     auto fire = loadMenuItem("fire.png", fireRect);
     auto light = loadMenuItem("light.png", lightRect);
 
@@ -286,9 +302,9 @@ void HelloWorld::insertMainMenu() {
     auto copy = loadMenuLabel(copyLabel, copyRect);
 
     //_menu = Menu::create(add, close, refresh, dice, colChange, fire,
-    _menu = Menu::create(menuBG, add, close, refresh, dice, colChange, fire,
-                         light, mobile, usage, inst, credit, info, built, ink,
-                         coco, blender, copy, NULL);
+    _menu = Menu::create(menuBG, add, close, refresh, dice, fire, light, mobile,
+                         usage, inst, credit, info, built, ink, coco, blender,
+                         copy, NULL);
     _menu->setPosition(vOrig.x - halfRect.size.width, vOrig.y);
     //_menu->setPosition(vOrig.x , vOrig.y);
     this->addChild(_menu, 1);
@@ -404,23 +420,30 @@ void HelloWorld::insertDice() {
     rbDes.mass = 1.f;
     rbDes.shape = Physics3DShape::createBox(Vec3(0.5f, 0.5f, 0.5f));
     rbDes.disableSleep = true;
-    auto sprite = PhysicsSprite3D::create("models/box.c3t", &rbDes);
+    auto sprite = PhysicsSprite3D::create("models/rDice.obj", &rbDes);
 
     if (sprite == nullptr) {
         problemLoading("'models/box.c3t'");
     } else {
         auto material =
-            Material::createWithFilename("materials/glossyGlass.material");
+            Material::createWithFilename("materials/colorDice.material");
+        Color4F red(Color3B(0, 40, 240));
+        auto ps =
+            material->getTechnique()->getPassByIndex(0)->getProgramState();
+        auto loc = ps->getUniformLocation("dice_color");
+
+        ps->setUniform(loc, &red, sizeof(Color4F));
         sprite->setMaterial(material);
+
         dice = static_cast<Physics3DRigidBody *>(sprite->getPhysicsObj());
         dice->setLinearFactor(Vec3::ONE);
-        // dice->setAngularVelocity(Vec3(1, 1, 0));
+        dice->setAngularVelocity(Vec3(1, 1, 0));
         dice->setCcdMotionThreshold(0.1f);
         dice->setCcdSweptSphereRadius(0.1f);
         // add the sprite as a child to this layer
         this->addChild(sprite);
 
-        sprite->setScale(0.5f);
+        sprite->setScale(.25f);
         sprite->syncPhysicsToNode();
         sprite->setSyncFlag(
             Physics3DComponent::PhysicsSyncFlag::PHYSICS_TO_NODE); // sync node
@@ -449,7 +472,7 @@ void HelloWorld::addQBox() {
         ps->setUniform(scale, &uScale, sizeof(float));
 
 #ifdef COCOS2D_DEBUG
-        //drawUniformData(ps);
+        // drawUniformData(ps);
 #endif
         floor->setMaterial(material);
 
@@ -590,9 +613,10 @@ std::vector<std::vector<cocos2d::Vec3>> HelloWorld::getQuadPlanes() {
     return ret;
 }
 
+void HelloWorld::test_callback() { std::cout << "clicked" << std::endl; }
+
 void HelloWorld::menuCloseCallback(Ref *pSender) {
     // Close the cocos2d-x game scene and quit the application
-    // std::cout<<"clicked"<<std::endl;
     Director::getInstance()->end();
 }
 
