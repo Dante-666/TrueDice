@@ -38,12 +38,9 @@
 #include "physics3d/CCPhysics3DObject.h"
 
 #include "CCMultiMenuImage.h"
-<<<<<<< Updated upstream
 #include "CCZoomMenuImage.h"
 #include "MenuState.h"
-=======
 #include "MyCamera.h"
->>>>>>> Stashed changes
 #include "renderer/backend/ProgramState.h"
 #include <vector>
 

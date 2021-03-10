@@ -254,8 +254,9 @@ void HelloWorld::insertMainMenu() {
 
     // Parchment background should be 3xhalfRects
     auto threeHalfRects = halfRect;
-    threeHalfRects.size.height = 3 * halfRect.size.height;
-    threeHalfRects.origin.y = halfRect.origin.y - halfRect.size.height;
+    threeHalfRects.size.height =
+        3 * halfRect.size.height + 2 * halfRect.origin.y;
+    threeHalfRects.origin.y = -halfRect.origin.y - halfRect.size.height;
 
     using cocos2d::backend::SamplerAddressMode;
     using cocos2d::backend::SamplerFilter;
@@ -403,7 +404,7 @@ void HelloWorld::initPhysicsAndCamera() {
         world->setDebugDrawEnable(true);
 #endif
 
-    world->setGravity(Vec3(0, 0, -10));
+    world->setGravity(Vec3(0, 0, 0));
 
     Size size = Director::getInstance()->getWinSize();
     auto camera = MyCamera::createPerspective(30.0f, size.width / size.height,
