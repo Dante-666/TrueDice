@@ -406,12 +406,14 @@ void HelloWorld::initPhysicsAndCamera() {
     world->setGravity(Vec3(0, 0, -10));
 
     Size size = Director::getInstance()->getWinSize();
-    auto camera = Camera::createPerspective(30.0f, size.width / size.height,
+    auto camera = MyCamera::createPerspective(30.0f, size.width / size.height,
                                             1.0f, 1000.0f);
     camera->setPosition3D(Vec3(5.0f, 0.0f, 0.0f));
     camera->lookAt(Vec3(0.0f, 0.0f, 0.0f), Vec3(0.0f, 1.0f, 0.0f));
     camera->setCameraFlag(CameraFlag::USER1);
     this->addChild(camera);
+
+    auto frustum = static_cast<MyCamera*>(camera)->getFrustum();
 
     this->setPhysics3DDebugCamera(camera);
 }
