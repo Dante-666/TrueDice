@@ -34,11 +34,11 @@ class MenuState {
 
 class CenterState : public MenuState, public Singleton<CenterState> {
     cocos2d::MoveBy *actionLeft;
-    cocos2d::EaseBounceOut *easeLeft;
+    cocos2d::EaseCubicActionOut *easeLeft;
     cocos2d::MoveBy *actionRight;
-    cocos2d::EaseBounceOut *easeRight;
+    cocos2d::EaseCubicActionOut *easeRight;
     cocos2d::MoveBy *actionUp;
-    cocos2d::EaseBounceOut *easeUp;
+    cocos2d::EaseCubicActionOut *easeUp;
     CenterState();
     virtual ~CenterState() override;
 
@@ -52,7 +52,7 @@ class CenterState : public MenuState, public Singleton<CenterState> {
 
 class LeftState : public MenuState, public Singleton<LeftState> {
     cocos2d::MoveBy *actionRight;
-    cocos2d::EaseBounceOut *easeRight;
+    cocos2d::EaseCubicActionOut *easeRight;
     LeftState();
     virtual ~LeftState() override;
 
@@ -64,7 +64,7 @@ class LeftState : public MenuState, public Singleton<LeftState> {
 
 class RightState : public MenuState, public Singleton<RightState> {
     cocos2d::MoveBy *actionLeft;
-    cocos2d::EaseBounceOut *easeLeft;
+    cocos2d::EaseCubicActionOut *easeLeft;
     RightState();
     virtual ~RightState() override;
 

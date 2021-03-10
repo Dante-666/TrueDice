@@ -28,16 +28,16 @@ MenuState *CenterState::swipeUpwards() {
 };
 void CenterState::setMoveToDims(cocos2d::Rect &visRect) {
     actionUp =
-        cocos2d::MoveBy::create(1, cocos2d::Vec2(-visRect.size.width, 0));
-    easeUp = cocos2d::EaseBounceOut::create(actionUp);
+        cocos2d::MoveBy::create(0.75, cocos2d::Vec2(-visRect.size.width, 0));
+    easeUp = cocos2d::EaseCubicActionOut::create(actionUp);
     CC_SAFE_RETAIN(easeUp);
     actionLeft =
-        cocos2d::MoveBy::create(1, cocos2d::Vec2(0, -visRect.size.height));
-    easeLeft = cocos2d::EaseBounceOut::create(actionLeft);
+        cocos2d::MoveBy::create(0.75, cocos2d::Vec2(0, -visRect.size.height));
+    easeLeft = cocos2d::EaseCubicActionOut::create(actionLeft);
     CC_SAFE_RETAIN(easeLeft);
     actionRight =
-        cocos2d::MoveBy::create(1, cocos2d::Vec2(0, visRect.size.height));
-    easeRight = cocos2d::EaseBounceOut::create(actionRight);
+        cocos2d::MoveBy::create(0.75, cocos2d::Vec2(0, visRect.size.height));
+    easeRight = cocos2d::EaseCubicActionOut::create(actionRight);
     CC_SAFE_RETAIN(easeRight);
 }
 
@@ -53,8 +53,8 @@ MenuState *LeftState::swipeRight() {
 }
 void LeftState::setMoveToDims(cocos2d::Rect &visRect) {
     actionRight =
-        cocos2d::MoveBy::create(1, cocos2d::Vec2(0, visRect.size.height));
-    easeRight = cocos2d::EaseBounceOut::create(actionRight);
+        cocos2d::MoveBy::create(0.75, cocos2d::Vec2(0, visRect.size.height));
+    easeRight = cocos2d::EaseCubicActionOut::create(actionRight);
     CC_SAFE_RETAIN(easeRight);
 }
 
@@ -71,8 +71,8 @@ MenuState *RightState::swipeLeft() {
 }
 void RightState::setMoveToDims(cocos2d::Rect &visRect) {
     actionLeft =
-        cocos2d::MoveBy::create(1, cocos2d::Vec2(0, -visRect.size.height));
-    easeLeft = cocos2d::EaseBounceOut::create(actionLeft);
+        cocos2d::MoveBy::create(0.75, cocos2d::Vec2(0, -visRect.size.height));
+    easeLeft = cocos2d::EaseCubicActionOut::create(actionLeft);
     CC_SAFE_RETAIN(easeLeft);
 }
 
