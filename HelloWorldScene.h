@@ -28,6 +28,7 @@
 #include "2d/CCLabelAtlas.h"
 #include "2d/CCMenuItem.h"
 #include "2d/CCNode.h"
+
 #include "CCEvent.h"
 #include "CCEventCustom.h"
 #include "CCEventListenerCustom.h"
@@ -42,6 +43,7 @@
 #include "CCZoomMenuImage.h"
 #include "MenuState.h"
 #include "IntersectionUtils.h"
+
 #include "renderer/backend/ProgramState.h"
 #include <vector>
 

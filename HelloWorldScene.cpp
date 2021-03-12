@@ -287,6 +287,7 @@ void HelloWorld::insertMainMenu() {
     close->setCallback(CC_CALLBACK_1(HelloWorld::menuCloseCallback, this));
     auto add = loadMenuItem("add.png", addRect);
     auto refresh = loadMenuItem("refresh.png", refreshRect);
+
     _diceUI = loadMenuItemMulti("dice", dieRect);
     _diceUI->setCallback(
         CC_CALLBACK_0(MenuItemMultiImage::activateNextImage, _diceUI));
@@ -310,6 +311,7 @@ void HelloWorld::insertMainMenu() {
     auto coco = loadMenuItem("cocos.png", cocoRect, false);
     auto blender = loadMenuItem("blender.png", blenderRect, false);
     auto copy = loadMenuLabel(copyLabel, copyRect);
+
 
     _menu = Menu::create(menuBG, add, close, refresh, _diceUI, fire, light,
                          mobile, usage, inst, credit, info, built, ink, coco,
@@ -421,6 +423,7 @@ void HelloWorld::initPhysicsAndCamera() {
 }
 
 void HelloWorld::insertDice(const Color4F &color) {
+
     if (_dices.size() >= 10) {
         return;
     }
@@ -450,6 +453,7 @@ void HelloWorld::insertDice(const Color4F &color) {
         dice->setCcdSweptSphereRadius(0.1f);
 
         _dices.push_back(dice);
+      
         // add the sprite as a child to this layer
         this->addChild(sprite);
 
