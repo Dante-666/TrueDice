@@ -63,7 +63,7 @@ bool HelloWorld::init() {
     // actual box
     addQBox();
 
-    insertDice(diceUI->getColor());
+    insertDice(_diceUI->getColor());
 
     createAccelerationCallbacks();
 
@@ -281,12 +281,12 @@ void HelloWorld::insertMainMenu() {
     close->setCallback(CC_CALLBACK_1(HelloWorld::menuCloseCallback, this));
     auto add = loadMenuItem("add.png", addRect);
     auto refresh = loadMenuItem("refresh.png", refreshRect);
-    diceUI = loadMenuItemMulti("dice", dieRect);
-    diceUI->setCallback(
-        CC_CALLBACK_0(MenuItemMultiImage::activateNextImage, diceUI));
+    _diceUI = loadMenuItemMulti("dice", dieRect);
+    _diceUI->setCallback(
+        CC_CALLBACK_0(MenuItemMultiImage::activateNextImage, _diceUI));
     add->setCallback(
         std::bind(&HelloWorld::insertDice, this,
-                  std::bind(&MenuItemMultiImage::getColor, diceUI)));
+                  std::bind(&MenuItemMultiImage::getColor, _diceUI)));
 
     auto fire = loadMenuItem("fire.png", fireRect);
     auto light = loadMenuItem("light.png", lightRect);
@@ -306,7 +306,7 @@ void HelloWorld::insertMainMenu() {
     auto copy = loadMenuLabel(copyLabel, copyRect);
 
     //_menu = Menu::create(add, close, refresh, dice, colChange, fire,
-    _menu = Menu::create(menuBG, add, close, refresh, diceUI, fire, light,
+    _menu = Menu::create(menuBG, add, close, refresh, _diceUI, fire, light,
                          mobile, usage, inst, credit, info, built, ink, coco,
                          blender, copy, NULL);
     _menu->setPosition(vOrig.x - halfRect.size.width, vOrig.y);
@@ -404,28 +404,26 @@ void HelloWorld::initPhysicsAndCamera() {
         world->setDebugDrawEnable(true);
 #endif
 
-    world->setGravity(Vec3(0, 0, 0));
+    world->setGravity({0, 0, -10});
 
     Size size = Director::getInstance()->getWinSize();
-    auto camera = MyCamera::createPerspective(30.0f, size.width / size.height,
-                                            1.0f, 1000.0f);
-    camera->setPosition3D(Vec3(5.0f, 0.0f, 0.0f));
-    camera->lookAt(Vec3(0.0f, 0.0f, 0.0f), Vec3(0.0f, 1.0f, 0.0f));
-    camera->setCameraFlag(CameraFlag::USER1);
-    this->addChild(camera);
+    _camera = Camera::createPerspective(30.0f, size.width / size.height, 1.0f,
+                                        50.0f);
+    _camera->setPosition3D(Vec3(5.0f, .0f, .0f));
+    _camera->lookAt(Vec3::ZERO);
+    _camera->setCameraFlag(CameraFlag::USER1);
+    this->addChild(_camera);
 
-    auto frustum = static_cast<MyCamera*>(camera)->getFrustum();
-
-    this->setPhysics3DDebugCamera(camera);
+    this->setPhysics3DDebugCamera(_camera);
 }
 
 void HelloWorld::insertDice(const Color4F &color) {
-    if (dices.size() >= 10) {
+    if (_dices.size() >= 10) {
         return;
     }
     Physics3DRigidBodyDes rbDes;
 
-    rbDes.originalTransform.rotateY(M_PI / 6);
+    //Mat4::createTranslation(10, 0, 0, &rbDes.originalTransform);
     rbDes.mass = 1.f;
     rbDes.shape = Physics3DShape::createBox(Vec3(0.5f, 0.5f, 0.5f));
     rbDes.disableSleep = true;
@@ -449,7 +447,7 @@ void HelloWorld::insertDice(const Color4F &color) {
         dice->setCcdMotionThreshold(0.1f);
         dice->setCcdSweptSphereRadius(0.1f);
 
-        dices.push_back(dice);
+        _dices.push_back(dice);
         // add the sprite as a child to this layer
         this->addChild(sprite);
 
@@ -542,7 +540,7 @@ void HelloWorld::addQBox() {
 void HelloWorld::createAccelerationCallbacks() {
     // create a matrix which aligns the accelerometer frame with the game frame
     // by experminents, it seems just one rotation is needed about Y
-    Mat4::createRotationY(MATH_PIOVER2, &android2Game);
+    Mat4::createRotationY(MATH_PIOVER2, &_android2Game);
 
     // add the motion sensor
     Device::setAccelerometerEnabled(true);
@@ -562,61 +560,60 @@ void HelloWorld::createAccelerationCallbacks() {
 std::vector<std::vector<cocos2d::Vec3>> HelloWorld::getQuadPlanes() {
     std::vector<std::vector<Vec3>> ret;
 
-    int x_min = 1, x_max = -1;
-    int y_min = -1, y_max = 1;
-    int z_min = -2, z_max = 2;
+    // add methods for plane intersection
+    auto corners = obtainIntersectionPoints(_camera);
 
     // bottom face
     std::vector<Vec3> bot;
-    bot.push_back(Vec3(x_min, y_min, z_min));
-    bot.push_back(Vec3(x_min, y_min, z_max));
-    bot.push_back(Vec3(x_min, y_max, z_max));
-    bot.push_back(Vec3(x_min, y_max, z_min));
+    bot.push_back(corners[0]);
+    bot.push_back(corners[1]);
+    bot.push_back(corners[3]);
+    bot.push_back(corners[2]);
 
     ret.push_back(bot);
 
     // top face
     std::vector<Vec3> top;
-    top.push_back(Vec3(x_max, y_min, z_min));
-    top.push_back(Vec3(x_max, y_min, z_max));
-    top.push_back(Vec3(x_max, y_max, z_max));
-    top.push_back(Vec3(x_max, y_max, z_min));
+    top.push_back(corners[4]);
+    top.push_back(corners[5]);
+    top.push_back(corners[7]);
+    top.push_back(corners[6]);
 
     ret.push_back(top);
 
     // left face
     std::vector<Vec3> left;
-    left.push_back(Vec3(x_min, y_min, z_min));
-    left.push_back(Vec3(x_min, y_max, z_min));
-    left.push_back(Vec3(x_max, y_max, z_min));
-    left.push_back(Vec3(x_max, y_min, z_min));
+    left.push_back(corners[0]);
+    left.push_back(corners[1]);
+    left.push_back(corners[5]);
+    left.push_back(corners[4]);
 
     ret.push_back(left);
 
     // right face
     std::vector<Vec3> right;
-    right.push_back(Vec3(x_min, y_min, z_max));
-    right.push_back(Vec3(x_min, y_max, z_max));
-    right.push_back(Vec3(x_max, y_max, z_max));
-    right.push_back(Vec3(x_max, y_min, z_max));
+    right.push_back(corners[2]);
+    right.push_back(corners[3]);
+    right.push_back(corners[7]);
+    right.push_back(corners[6]);
 
     ret.push_back(right);
 
     // down face
     std::vector<Vec3> down;
-    down.push_back(Vec3(x_min, y_min, z_min));
-    down.push_back(Vec3(x_min, y_min, z_max));
-    down.push_back(Vec3(x_max, y_min, z_max));
-    down.push_back(Vec3(x_max, y_min, z_min));
+    down.push_back(corners[1]);
+    down.push_back(corners[3]);
+    down.push_back(corners[7]);
+    down.push_back(corners[5]);
 
     ret.push_back(down);
 
     // up face
     std::vector<Vec3> up;
-    up.push_back(Vec3(x_min, y_max, z_min));
-    up.push_back(Vec3(x_min, y_max, z_max));
-    up.push_back(Vec3(x_max, y_max, z_max));
-    up.push_back(Vec3(x_max, y_max, z_min));
+    up.push_back(corners[0]);
+    up.push_back(corners[2]);
+    up.push_back(corners[6]);
+    up.push_back(corners[4]);
 
     ret.push_back(up);
 
@@ -672,7 +669,7 @@ void HelloWorld::onTouchEnded(Touch *touch, Event *event) {
 }
 
 void HelloWorld::onAcceleration(Acceleration *accel, Event *event) {
-    auto android_l_accel = android2Game * Vec3(accel->x, accel->y, accel->z);
+    auto android_l_accel = _android2Game * Vec3(accel->x, accel->y, accel->z);
 
 #ifdef COCOS2D_DEBUG
     _accumlaDt += Director::getInstance()->getDeltaTime();
@@ -688,7 +685,7 @@ void HelloWorld::onAcceleration(Acceleration *accel, Event *event) {
     // the impulses are too wild,
     // scale these down and also negate the world gravity while applying this
     // for more realistic behavior
-    for (auto dice : dices) {
+    for (auto dice : _dices) {
         dice->applyCentralImpulse(android_l_accel * -2);
     }
 }
@@ -696,7 +693,7 @@ void HelloWorld::onAcceleration(Acceleration *accel, Event *event) {
 void HelloWorld::onGravity(EventCustom *event) {
     Acceleration *gravity = static_cast<Acceleration *>(event->getUserData());
     auto android_gravity =
-        android2Game * Vec3(gravity->x, gravity->y, gravity->z);
+        _android2Game * Vec3(gravity->x, gravity->y, gravity->z);
 
 #ifdef COCOS2D_DEBUG
     _accumgDt += Director::getInstance()->getDeltaTime();

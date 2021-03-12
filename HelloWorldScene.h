@@ -27,6 +27,7 @@
 
 #include "2d/CCLabelAtlas.h"
 #include "2d/CCMenuItem.h"
+#include "2d/CCNode.h"
 #include "CCEvent.h"
 #include "CCEventCustom.h"
 #include "CCEventListenerCustom.h"
@@ -40,18 +41,19 @@
 #include "CCMultiMenuImage.h"
 #include "CCZoomMenuImage.h"
 #include "MenuState.h"
-#include "MyCamera.h"
+#include "IntersectionUtils.h"
 #include "renderer/backend/ProgramState.h"
 #include <vector>
 
 #define TG3_GRAVITY_EARTH (9.80665f)
 
 class HelloWorld : public cocos2d::Scene {
-    cocos2d::Mat4 android2Game;
+    cocos2d::Mat4 _android2Game;
     // This should be a vector of dices when multiple
     // will be involved
-    std::vector<cocos2d::Physics3DRigidBody *> dices;
-    cocos2d::MenuItemMultiImage *diceUI;
+    std::vector<cocos2d::Physics3DRigidBody *> _dices;
+    cocos2d::MenuItemMultiImage *_diceUI;
+    cocos2d::Camera* _camera;
 
 #ifdef COCOS2D_DEBUG
     cocos2d::Label *accelLabel;
