@@ -89,6 +89,12 @@ void HelloWorld::insertMainMenu() {
     };
 #endif
 
+#ifdef COCOS2D_DEBUG
+    auto winSize = Director::getInstance()->getWinSize();
+    printSize(winSize);
+    printSize(vSize);
+    printVec(vOrig);
+#endif
     // This gives how much screen area we have to work with
     auto halfRect = Rect(vOrig, vSize);
     halfRect.size.width /= 2;
@@ -305,12 +311,10 @@ void HelloWorld::insertMainMenu() {
     auto blender = loadMenuItem("blender.png", blenderRect, false);
     auto copy = loadMenuLabel(copyLabel, copyRect);
 
-    //_menu = Menu::create(add, close, refresh, dice, colChange, fire,
     _menu = Menu::create(menuBG, add, close, refresh, _diceUI, fire, light,
                          mobile, usage, inst, credit, info, built, ink, coco,
                          blender, copy, NULL);
     _menu->setPosition(vOrig.x - halfRect.size.width, vOrig.y);
-    //_menu->setPosition(vOrig.x , vOrig.y);
     this->addChild(_menu, 1);
     _menuD.setNodeAndSize(_menu, halfRect);
 
@@ -394,7 +398,6 @@ void HelloWorld::drawUniformData(cocos2d::backend::ProgramState *ps) {
 #endif
 
 void HelloWorld::initPhysicsAndCamera() {
-
     // construct PhysicsWorld
     auto world = this->getPhysics3DWorld();
 #ifdef COCOS2D_DEBUG
@@ -404,11 +407,11 @@ void HelloWorld::initPhysicsAndCamera() {
         world->setDebugDrawEnable(true);
 #endif
 
-    world->setGravity({0, 0, -10});
+    world->setGravity({0, 0, 0});
 
-    Size size = Director::getInstance()->getWinSize();
-    _camera = Camera::createPerspective(30.0f, size.width / size.height, 1.0f,
-                                        50.0f);
+    Size size = Director::getInstance()->getVisibleSize();
+    _camera =
+        Camera::createPerspective(30.0f, size.width / size.height, 1.0f, 50.0f);
     _camera->setPosition3D(Vec3(5.0f, .0f, .0f));
     _camera->lookAt(Vec3::ZERO);
     _camera->setCameraFlag(CameraFlag::USER1);
@@ -423,7 +426,6 @@ void HelloWorld::insertDice(const Color4F &color) {
     }
     Physics3DRigidBodyDes rbDes;
 
-    //Mat4::createTranslation(10, 0, 0, &rbDes.originalTransform);
     rbDes.mass = 1.f;
     rbDes.shape = Physics3DShape::createBox(Vec3(0.5f, 0.5f, 0.5f));
     rbDes.disableSleep = true;
@@ -479,9 +481,6 @@ void HelloWorld::addQBox() {
         float uScale{3};
         ps->setUniform(scale, &uScale, sizeof(float));
 
-#ifdef COCOS2D_DEBUG
-        // drawUniformData(ps);
-#endif
         floor->setMaterial(material);
 
         floor->setPosition3D(Vec3(-15, 0, 0));
@@ -559,6 +558,9 @@ void HelloWorld::createAccelerationCallbacks() {
 
 std::vector<std::vector<cocos2d::Vec3>> HelloWorld::getQuadPlanes() {
     std::vector<std::vector<Vec3>> ret;
+
+    auto vSize = Director::getInstance()->getVisibleSize();
+    auto vOrig = Director::getInstance()->getVisibleOrigin();
 
     // add methods for plane intersection
     auto corners = obtainIntersectionPoints(_camera);

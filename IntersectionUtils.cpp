@@ -3,6 +3,7 @@
 NS_CC_BEGIN
 
 std::vector<Vec3> obtainIntersectionPoints(const Camera *cam) {
+
     const Mat4 &mat = cam->getViewProjectionMatrix();
     // ref
     // http://www.lighthouse3d.com/tutorials/view-frustum-culling/clip-space-approach-extracting-the-planes/
@@ -22,7 +23,7 @@ std::vector<Vec3> obtainIntersectionPoints(const Camera *cam) {
         (mat.m[15] - mat.m[13])); // top
     /*	Don't need the near and far, instead, come up with the ones
         we are using. Since the coordinates are in world space, we can use these
-	equations
+        equations
     */
     _plane[4].initPlane(Vec3(-1, 0, 0), 1.0);
     _plane[5].initPlane(Vec3(1, 0, 0), 1.0);
@@ -45,19 +46,19 @@ std::vector<Vec3> obtainIntersectionPoints(const Camera *cam) {
                       << _rays[i]._origin.y << ", " << _rays[i]._origin.z << ")"
                       << std::endl;
             std::cout << "Direction: (" << _rays[i]._direction.x << ", "
-                      << _rays[i]._direction.y << ", " << _rays[i]._direction.z << ")"
-                      << std::endl;
+                      << _rays[i]._direction.y << ", " << _rays[i]._direction.z
+                      << ")" << std::endl;
         }
     };
     viewRays();
 #endif
 
     /*	Then use ray-plane intersection to get the corners of collision quad
-    */
+     */
     std::vector<Vec3> corners;
     Vec3 corner;
     auto intersectionHelper = [&corner, &corners, &_rays,
-                            &_plane](int rayIdx, int planeIdx) {
+                               &_plane](int rayIdx, int planeIdx) {
         corner = intersection(_rays[rayIdx], _plane[planeIdx]);
         corners.push_back(corner);
     };
@@ -73,7 +74,7 @@ std::vector<Vec3> obtainIntersectionPoints(const Camera *cam) {
     return corners;
 };
 
-const Ray intersection(const Plane &p1, const Plane &p2, const Vec3& origin) {
+const Ray intersection(const Plane &p1, const Plane &p2, const Vec3 &origin) {
     /*	Two planes intersect at a line and the line direction
         is given by the corss product between the plane normals
     */
@@ -83,8 +84,8 @@ const Ray intersection(const Plane &p1, const Plane &p2, const Vec3& origin) {
     // We could have parallel checks but we know these planes intersect
 
     /*	We know the planes would intersect at the camera origin
-    
-    	Line = p + t * dir
+
+        Line = p + t * dir
     */
     Ray r;
     r.set(origin, dir);
