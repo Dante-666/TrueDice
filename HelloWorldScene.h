@@ -57,6 +57,8 @@ class HelloWorld : public cocos2d::Scene {
     // will be involved
     std::vector<cocos2d::MyPhysicsSprite3D *> _dices;
     cocos2d::MenuItemMultiImage *_diceUI;
+    std::vector<cocos2d::MenuItemZoomImage *> _particleUI;
+    int _particleIndex = -1;
     cocos2d::Camera* _camera;
 
 #ifdef COCOS2D_DEBUG
@@ -103,6 +105,9 @@ class HelloWorld : public cocos2d::Scene {
     // attach acceleration event callbacks
     void createAccelerationCallbacks();
 
+    // Select/Deselct the MenuItemImage for particle effect
+    void selectParticleEffect(cocos2d::Ref*);
+
     // return a vector of surface points for convex hull
     std::vector<std::vector<cocos2d::Vec3>> getQuadPlanes();
 
@@ -120,8 +125,6 @@ class HelloWorld : public cocos2d::Scene {
 
     // a selector callback
     void menuCloseCallback(cocos2d::Ref *pSender);
-
-    void test_callback();
 
     // implement the "static create()" method manually
     CREATE_FUNC(HelloWorld);

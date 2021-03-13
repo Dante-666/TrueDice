@@ -8,9 +8,16 @@ class MenuItemZoomImage : public MenuItem {
     virtual ~MenuItemZoomImage() {}
 
   public:
-    static MenuItemZoomImage *create(const std::string &normalImage);
+    static MenuItemZoomImage *
+    create(const std::string &normalImage,
+           const std::string &selectedImage = std::string());
 
-    bool initWithNormalImage(const std::string &normalImage);
+    bool initWithNormalImage(const std::string &normalImage,
+                             const std::string &selectedImage = std::string());
+
+    bool isSelected();
+    void selectImage();
+    void unSelectImage();
 
     /** Add the zoom-in zoom-out functionality here */
     virtual void selected() override;
@@ -18,7 +25,9 @@ class MenuItemZoomImage : public MenuItem {
 
   protected:
     Node *_normalImage;
+    Node *_selectedImage;
     float _originalScale;
+    bool _selected = false;
 
   private:
     CC_DISALLOW_COPY_AND_ASSIGN(MenuItemZoomImage);

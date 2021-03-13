@@ -11,10 +11,16 @@
 
 NS_CC_BEGIN
 
-class MyPhysicsSprite3D : public PhysicsSprite3D {
-    static int idx;
+enum class ParticleType {
+    NONE, FIRE, LIGHTNING
+};
 
-    int id;
+class MyPhysicsSprite3D : public PhysicsSprite3D {
+    static int _idx;
+
+    int _id;
+
+    ParticleType _type = ParticleType::NONE;
 
   public:
     static MyPhysicsSprite3D *create(const Color4F &color);
@@ -23,7 +29,9 @@ class MyPhysicsSprite3D : public PhysicsSprite3D {
     void pairCallBack(const Physics3DCollisionInfo& ci);
 
     void bindExitCallBack(Physics3DCollider* collider);
-    void exitCallBack(Physics3DObject *other); 
+    void exitCallBack(Physics3DObject *other);
+
+    void conditionalCallBack(const ParticleType& type);
 };
 
 NS_CC_END

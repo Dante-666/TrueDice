@@ -7,9 +7,10 @@ NS_CC_BEGIN
 
 const unsigned int kZoomActionTag = 0xc0c05012;
 
-MenuItemZoomImage *MenuItemZoomImage::create(const std::string &normalImage) {
+MenuItemZoomImage *MenuItemZoomImage::create(const std::string &normalImage,
+                                             const std::string &selectedImage) {
     MenuItemZoomImage *ret = new (std::nothrow) MenuItemZoomImage();
-    if (ret && ret->initWithNormalImage(normalImage)) {
+    if (ret && ret->initWithNormalImage(normalImage, selectedImage)) {
         ret->autorelease();
         return ret;
     }
@@ -17,7 +18,8 @@ MenuItemZoomImage *MenuItemZoomImage::create(const std::string &normalImage) {
     return nullptr;
 };
 
-bool MenuItemZoomImage::initWithNormalImage(const std::string &normalImage) {
+bool MenuItemZoomImage::initWithNormalImage(const std::string &normalImage,
+                                            const std::string &selectedImage) {
     Node *img = nullptr;
     if (normalImage.size() > 0) {
         img = Sprite::create(normalImage);
@@ -34,13 +36,43 @@ bool MenuItemZoomImage::initWithNormalImage(const std::string &normalImage) {
             if (_enabled) {
                 _normalImage->setVisible(true);
             }
-	    setAnchorPoint(Vec2(0.5, 0.5));
+            setAnchorPoint(Vec2(0.5, 0.5));
+        }
+    }
+    if (selectedImage.size() > 0) {
+        img = Sprite::create(selectedImage);
+        if (img) {
+            addChild(img);
+            img->setAnchorPoint(Vec2(0, 0));
+        }
+        if (_selectedImage) {
+            removeChild(_selectedImage, true);
+        }
+        _selectedImage = img;
+        if (_selectedImage) {
+            _selectedImage->setVisible(true);
+            _selectedImage->setOpacity(0);
+            setAnchorPoint(Vec2(0.5, 0.5));
         }
     }
     setCascadeColorEnabled(true);
     setCascadeOpacityEnabled(true);
     return true;
 };
+
+bool MenuItemZoomImage::isSelected() { return _selected; }
+
+void MenuItemZoomImage::selectImage() {
+    Action *fadeAction = FadeTo::create(0.3f, 180);
+    _selectedImage->runAction(fadeAction);
+    _selected = true;
+}
+
+void MenuItemZoomImage::unSelectImage() {
+    Action *fadeAction = FadeTo::create(0.3f, 0);
+    _selectedImage->runAction(fadeAction);
+    _selected = false;
+}
 
 void MenuItemZoomImage::selected() {
     if (_enabled) {
