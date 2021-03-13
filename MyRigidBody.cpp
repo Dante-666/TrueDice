@@ -2,32 +2,28 @@
 
 NS_CC_BEGIN
 
-int MyPhysicsSprite3D::idx = 0;
-/* auto colCb = [](const Physics3DObject *ci) {
-        auto ps =
-        PUParticleSystem3D::create("Particle3D/scripts/mp_hit_04.pu");
-        ps->setPosition3D(ci.collisionPointList[0].worldPositionOnB);
-        ps->setScale(0.05f);
-        ps->startParticleSystem();
-        ps->setCameraMask(2);
-        this->addChild(ps);
-        ps->runAction(Sequence::create(
-            DelayTime::create(1.0f),
-            CallFunc::create([=]() { ps->removeFromParent(); }), nullptr));
-    };
-*/
+int MyPhysicsSprite3D::_idx = 0;
 
 void MyPhysicsSprite3D::pairCallBack(const Physics3DCollisionInfo &ci) {
     if (!ci.dynamicCollision) {
         // Expects objB to be the ground always
         auto mask = ci.objB->getMask();
-        if ((mask & id) == 0) {
+        if ((mask & _id) == 0) {
+            ci.objB->setMask(mask | _id);
             if (this->getChildrenCount() < 6) {
                 AudioEngine::play2d("sfx/hitWall.mp3", false, 1.0);
-                auto ps = PUParticleSystem3D::create(
-                    "particles/lightningBolt.pu",
-                    //"particles/explosionSystem.pu",
-                    "materials/pu_light_fire.material");
+                PUParticleSystem3D *ps;
+                if (_type == ParticleType::NONE) {
+                    return;
+                } else if (_type == ParticleType::FIRE) {
+                    ps = PUParticleSystem3D::create(
+                        "particles/explosionSystem.pu",
+                        "materials/pu_light_fire.material");
+                } else if (_type == ParticleType::LIGHTNING) {
+                    ps = PUParticleSystem3D::create(
+                        "particles/lightningBolt.pu",
+                        "materials/pu_light_fire.material");
+                }
                 ps->setPosition3D(ci.collisionPointList[0].worldPositionOnA);
                 ps->setScale(0.2f);
                 ps->startParticleSystem();
@@ -38,18 +34,26 @@ void MyPhysicsSprite3D::pairCallBack(const Physics3DCollisionInfo &ci) {
                     CallFunc::create([=]() { ps->removeFromParent(); }),
                     nullptr));
             }
-            ci.objB->setMask(mask | id);
         }
     } else {
         auto mask = ci.objB->getMask();
-        if ((mask & id) == 0) {
+        if ((mask & _id) == 0) {
+            ci.objB->setMask(mask | _id);
             if (this->getChildrenCount() < 6) {
                 // could play different audio here
                 AudioEngine::play2d("sfx/hitWall.mp3", false, 0.5);
-                auto ps = PUParticleSystem3D::create(
-                    "particles/lightningBolt.pu",
-                    //"particles/explosionSystem.pu",
-                    "materials/pu_light_fire.material");
+                PUParticleSystem3D *ps;
+                if (_type == ParticleType::NONE) {
+                    return;
+                } else if (_type == ParticleType::FIRE) {
+                    ps = PUParticleSystem3D::create(
+                        "particles/explosionSystem.pu",
+                        "materials/pu_light_fire.material");
+                } else if (_type == ParticleType::LIGHTNING) {
+                    ps = PUParticleSystem3D::create(
+                        "particles/lightningBolt.pu",
+                        "materials/pu_light_fire.material");
+                }
                 ps->setPosition3D(ci.collisionPointList[0].worldPositionOnA);
                 ps->setScale(0.2f);
                 ps->startParticleSystem();
@@ -60,47 +64,9 @@ void MyPhysicsSprite3D::pairCallBack(const Physics3DCollisionInfo &ci) {
                     CallFunc::create([=]() { ps->removeFromParent(); }),
                     nullptr));
             }
-            ci.objB->setMask(mask | id);
         }
     }
 }
-/*if (ci.objA == this->getPhysicsObj()) {
-    auto mask = ci.objB->getMask();
-    if ((mask & id) == 0) {
-        auto vel = static_cast<Physics3DRigidBody
-*>(ci.objA)->getLinearVelocity(); AudioEngine::play2d("sfx/hitWall.mp3",
-false, 1.0); auto ps =
-            PUParticleSystem3D::create("particles/mp_hit_04.pu");
-        ps->setPosition3D(ci.collisionPointList[0].worldPositionOnA);
-        ps->setScale(0.05f);
-        ps->startParticleSystem();
-        ps->setCameraMask(2);
-        this->addChild(ps);
-        ps->runAction(Sequence::create(
-            DelayTime::create(1.0f),
-            CallFunc::create([=]() { ps->removeFromParent(); }),
-nullptr));
-
-        ci.objB->setMask(mask | id);
-    }
-} else if (ci.objB == this->getPhysicsObj()) {
-    auto mask = ci.objA->getMask();
-    if ((mask & id) == 0) {
-        auto vel = static_cast<Physics3DRigidBody
-*>(ci.objB)->getLinearVelocity(); AudioEngine::play2d("sfx/hitWall.mp3",
-false, 1.0); auto ps =
-            PUParticleSystem3D::create("particles/mp_hit_04.pu");
-        ps->setPosition3D(ci.collisionPointList[0].worldPositionOnB);
-        ps->setScale(0.05f);
-        ps->startParticleSystem();
-        ps->setCameraMask(2);
-        this->addChild(ps);
-        ps->runAction(Sequence::create(
-            DelayTime::create(1.0f),
-            CallFunc::create([=]() { ps->removeFromParent(); }),
-nullptr)); ci.objA->setMask(mask | id);
-    }
-}*/
 
 void MyPhysicsSprite3D::bindPairCallBack(Physics3DRigidBody *rb) {
     rb->setCollisionCallback(std::bind(&MyPhysicsSprite3D::pairCallBack, this,
@@ -108,13 +74,18 @@ void MyPhysicsSprite3D::bindPairCallBack(Physics3DRigidBody *rb) {
 }
 
 void MyPhysicsSprite3D::exitCallBack(Physics3DObject *other) {
-    other->setMask(other->getMask() & !id);
+    other->setMask(other->getMask() & !_id);
 }
 
 void MyPhysicsSprite3D::bindExitCallBack(Physics3DCollider *collider) {
-    id = 1 << idx++;
+    // TODO: add overflow
+    _id = 1 << _idx++;
     collider->onTriggerExit = std::bind(&MyPhysicsSprite3D::exitCallBack, this,
                                         std::placeholders::_1);
+}
+
+void MyPhysicsSprite3D::conditionalCallBack(const ParticleType& type) {
+    _type = type;
 }
 
 MyPhysicsSprite3D *MyPhysicsSprite3D::create(const Color4F &color) {

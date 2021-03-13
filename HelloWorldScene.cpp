@@ -213,10 +213,14 @@ void HelloWorld::insertMainMenu() {
                                           "All rights reserved",
                                           TextHAlignment::CENTER);
 
-    auto loadMenuItem = [](const std::string &loc, Rect &pos,
-                           bool enabled = true) -> MenuItem * {
+    auto loadMenuItem =
+        [](const std::string &loc, Rect &pos, bool enabled = true,
+           const std::string &sLoc = std::string()) -> MenuItemZoomImage * {
         auto imgLoc = "menuIcons/" + loc;
-        auto mii = MenuItemZoomImage::create(imgLoc);
+        auto sImgLoc = sLoc.size() > 0 ? "menuIcons/" + sLoc : sLoc;
+
+        auto mii = MenuItemZoomImage::create(imgLoc, sImgLoc);
+
         mii->setRotation(-90);
 
         if (mii == nullptr || mii->getContentSize().width <= 0 ||
@@ -295,8 +299,14 @@ void HelloWorld::insertMainMenu() {
         std::bind(&HelloWorld::insertDice, this,
                   std::bind(&MenuItemMultiImage::getColor, _diceUI)));
 
-    auto fire = loadMenuItem("fire.png", fireRect);
-    auto light = loadMenuItem("light.png", lightRect);
+    auto fire = loadMenuItem("fire.png", fireRect, true, "sfire.png");
+    auto light = loadMenuItem("light.png", lightRect, true, "slight.png");
+    _particleUI.push_back(fire);
+    _particleUI.push_back(light);
+    fire->setCallback(std::bind(&HelloWorld::selectParticleEffect, this,
+                                std::placeholders::_1));
+    light->setCallback(std::bind(&HelloWorld::selectParticleEffect, this,
+                                 std::placeholders::_1));
 
     // Right items
     auto mobile = loadMenuItem("mobile.png", mobileRect, false);
@@ -429,50 +439,20 @@ void HelloWorld::insertDice(const Color4F &color) {
 
     auto dice = MyPhysicsSprite3D::create(color);
     this->addChild(dice);
-    _dices.push_back(dice);
-    /*Physics3DRigidBodyDes rbDes;
-
-    rbDes.mass = 1.f;
-    rbDes.shape = Physics3DShape::createBox(Vec3(0.5f, 0.5f, 0.5f));
-    rbDes.disableSleep = true;
-    auto sprite = PhysicsSprite3D::create("models/rDice.obj", &rbDes);
-
-    if (sprite == nullptr) {
-        problemLoading("'models/box.c3t'");
+    if (_particleIndex == 0) {
+        dice->conditionalCallBack(ParticleType::FIRE);
+    } else if (_particleIndex == 1) {
+        dice->conditionalCallBack(ParticleType::LIGHTNING);
     } else {
-        auto material =
-            Material::createWithFilename("materials/colorDice.material");
-        auto ps =
-            material->getTechnique()->getPassByIndex(0)->getProgramState();
-        auto loc = ps->getUniformLocation("dice_color");
-
-        ps->setUniform(loc, &color, sizeof(Color4F));
-        sprite->setMaterial(material);
-
-        auto dice = static_cast<Physics3DRigidBody *>(sprite->getPhysicsObj());
-        dice->setLinearFactor(Vec3::ONE);
-        dice->setAngularVelocity(Vec3(1, 1, 0));
-        dice->setCcdMotionThreshold(0.1f);
-        dice->setCcdSweptSphereRadius(0.1f);
-
-        _dices.push_back(dice);
-
-        // add the sprite as a child to this layer
-        this->addChild(sprite);
-
-        sprite->setScale(.25f);
-        sprite->syncPhysicsToNode();
-        sprite->setSyncFlag(
-            Physics3DComponent::PhysicsSyncFlag::PHYSICS_TO_NODE); // sync node
-                                                                   // to physics
-        sprite->setCameraMask((unsigned short)CameraFlag::USER1);
-    }*/
+        dice->conditionalCallBack(ParticleType::NONE);
+    }
+    _dices.push_back(dice);
 }
 
 void HelloWorld::addQBox() {
     auto quads = getQuadPlanes();
 
-       auto floor = Sprite3D::create("models/flat.c3t");
+    auto floor = Sprite3D::create("models/flat.c3t");
     if (floor == nullptr) {
         problemLoading("'models/flat.c3t'");
     } else {
@@ -508,7 +488,7 @@ void HelloWorld::addQBox() {
             rigidBody->setAngularVelocity(Vec3(0, 0, 0));
             rigidBody->setCcdMotionThreshold(0.5f);
             rigidBody->setCcdSweptSphereRadius(0.4f);
-	    rigidBody->setMask(0);
+            rigidBody->setMask(0);
             auto rbComponent = Physics3DComponent::create(rigidBody);
             plane->addComponent(rbComponent);
             plane->setContentSize(plane->getBoundingBox().size);
@@ -611,7 +591,33 @@ std::vector<std::vector<cocos2d::Vec3>> HelloWorld::getQuadPlanes() {
     return ret;
 }
 
-void HelloWorld::test_callback() { std::cout << "clicked" << std::endl; }
+void HelloWorld::selectParticleEffect(Ref *item) {
+    auto img = static_cast<MenuItemZoomImage *>(item);
+    if (img->isSelected()) {
+        _particleIndex = -1;
+        img->unSelectImage();
+        for (int i = 0; i < _dices.size(); i++) {
+            _dices[i]->conditionalCallBack(ParticleType::NONE);
+        }
+    } else {
+        for (int i = 0; i < _particleUI.size(); i++) {
+            if (img == _particleUI[i]) {
+                _particleIndex = i;
+            }
+            _particleUI[i]->unSelectImage();
+        }
+        if (_particleIndex == 0) {
+            for (int i = 0; i < _dices.size(); i++) {
+                _dices[i]->conditionalCallBack(ParticleType::FIRE);
+            }
+        } else if (_particleIndex == 1) {
+            for (int i = 0; i < _dices.size(); i++) {
+                _dices[i]->conditionalCallBack(ParticleType::LIGHTNING);
+            }
+        }
+        img->selectImage();
+    }
+}
 
 void HelloWorld::menuCloseCallback(Ref *pSender) {
     // Close the cocos2d-x game scene and quit the application
