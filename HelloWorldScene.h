@@ -28,6 +28,7 @@
 #include "2d/CCLabelAtlas.h"
 #include "2d/CCMenuItem.h"
 #include "2d/CCNode.h"
+#include "extensions/Particle3D/PU/CCPUParticleSystem3D.h"
 
 #include "CCEvent.h"
 #include "CCEventCustom.h"
@@ -43,6 +44,7 @@
 #include "CCZoomMenuImage.h"
 #include "MenuState.h"
 #include "IntersectionUtils.h"
+#include "MyRigidBody.h"
 
 #include "renderer/backend/ProgramState.h"
 #include <vector>
@@ -53,7 +55,7 @@ class HelloWorld : public cocos2d::Scene {
     cocos2d::Mat4 _android2Game;
     // This should be a vector of dices when multiple
     // will be involved
-    std::vector<cocos2d::Physics3DRigidBody *> _dices;
+    std::vector<cocos2d::MyPhysicsSprite3D *> _dices;
     cocos2d::MenuItemMultiImage *_diceUI;
     cocos2d::Camera* _camera;
 

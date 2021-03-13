@@ -312,7 +312,6 @@ void HelloWorld::insertMainMenu() {
     auto blender = loadMenuItem("blender.png", blenderRect, false);
     auto copy = loadMenuLabel(copyLabel, copyRect);
 
-
     _menu = Menu::create(menuBG, add, close, refresh, _diceUI, fire, light,
                          mobile, usage, inst, credit, info, built, ink, coco,
                          blender, copy, NULL);
@@ -409,7 +408,7 @@ void HelloWorld::initPhysicsAndCamera() {
         world->setDebugDrawEnable(true);
 #endif
 
-    world->setGravity({0, 0, 0});
+    world->setGravity({0, 0, -10});
 
     Size size = Director::getInstance()->getVisibleSize();
     _camera =
@@ -427,7 +426,11 @@ void HelloWorld::insertDice(const Color4F &color) {
     if (_dices.size() >= 10) {
         return;
     }
-    Physics3DRigidBodyDes rbDes;
+
+    auto dice = MyPhysicsSprite3D::create(color);
+    this->addChild(dice);
+    _dices.push_back(dice);
+    /*Physics3DRigidBodyDes rbDes;
 
     rbDes.mass = 1.f;
     rbDes.shape = Physics3DShape::createBox(Vec3(0.5f, 0.5f, 0.5f));
@@ -453,7 +456,7 @@ void HelloWorld::insertDice(const Color4F &color) {
         dice->setCcdSweptSphereRadius(0.1f);
 
         _dices.push_back(dice);
-      
+
         // add the sprite as a child to this layer
         this->addChild(sprite);
 
@@ -463,17 +466,13 @@ void HelloWorld::insertDice(const Color4F &color) {
             Physics3DComponent::PhysicsSyncFlag::PHYSICS_TO_NODE); // sync node
                                                                    // to physics
         sprite->setCameraMask((unsigned short)CameraFlag::USER1);
-    }
+    }*/
 }
 
 void HelloWorld::addQBox() {
     auto quads = getQuadPlanes();
 
-    auto colCb = [](const Physics3DObject *ci) {
-        AudioEngine::play2d("sfx/hitWall.mp3", false, 1.0);
-    };
-
-    auto floor = Sprite3D::create("models/flat.c3t");
+       auto floor = Sprite3D::create("models/flat.c3t");
     if (floor == nullptr) {
         problemLoading("'models/flat.c3t'");
     } else {
@@ -499,31 +498,17 @@ void HelloWorld::addQBox() {
 
         rbDes.mass = 0.f;
         rbDes.shape = Physics3DShape::createConvexHull(quad.data(), 4);
-        colliderDes.shape = rbDes.shape;
-        colliderDes.isTrigger = true;
-        auto collider = Physics3DCollider::create(&colliderDes);
-        auto component = Physics3DComponent::create(collider);
-
-        // Add this to a dummy node since Physics3DRigidBody will already
-        // have a RigidBody component
-        auto node = Node::create();
-        node->addComponent(component);
-        node->setCameraMask((unsigned short)CameraFlag::USER1);
-
-        this->addChild(node);
-
-        collider->onTriggerEnter = colCb;
 
         auto plane = new (std::nothrow) PhysicsSprite3D();
         if (plane == nullptr) {
             printf("Error while creating PhysicsSprite3D\n");
         } else {
             auto rigidBody = Physics3DRigidBody::create(&rbDes);
-            // static_cast<Physics3DRigidBody *>(plane->getPhysicsObj());
             rigidBody->setLinearFactor(Vec3::ONE);
             rigidBody->setAngularVelocity(Vec3(0, 0, 0));
             rigidBody->setCcdMotionThreshold(0.5f);
             rigidBody->setCcdSweptSphereRadius(0.4f);
+	    rigidBody->setMask(0);
             auto rbComponent = Physics3DComponent::create(rigidBody);
             plane->addComponent(rbComponent);
             plane->setContentSize(plane->getBoundingBox().size);
@@ -692,7 +677,8 @@ void HelloWorld::onAcceleration(Acceleration *accel, Event *event) {
     // scale these down and also negate the world gravity while applying this
     // for more realistic behavior
     for (auto dice : _dices) {
-        dice->applyCentralImpulse(android_l_accel * -2);
+        auto rb = static_cast<Physics3DRigidBody *>(dice->getPhysicsObj());
+        rb->applyCentralImpulse(android_l_accel * -2);
     }
 }
 
