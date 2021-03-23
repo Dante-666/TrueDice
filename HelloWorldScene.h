@@ -39,6 +39,7 @@
 #include "math/Vec3.h"
 #include "physics3d/CCPhysics3D.h"
 #include "physics3d/CCPhysics3DObject.h"
+#include "renderer/backend/Device.h"
 
 #include "CCMultiMenuImage.h"
 #include "CCZoomMenuImage.h"
