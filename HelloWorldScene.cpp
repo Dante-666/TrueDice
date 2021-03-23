@@ -89,12 +89,7 @@ void HelloWorld::insertMainMenu() {
     };
 #endif
 
-#ifdef COCOS2D_DEBUG
-    auto winSize = Director::getInstance()->getWinSize();
-    printSize(winSize);
-    printSize(vSize);
-    printVec(vOrig);
-#endif
+
     // This gives how much screen area we have to work with
     auto halfRect = Rect(vOrig, vSize);
     halfRect.size.width /= 2;
@@ -276,15 +271,53 @@ void HelloWorld::insertMainMenu() {
     auto menuBGSprite = Sprite::create("menuIcons/parchment_seamless.jpg");
     if (menuBGSprite == nullptr || menuBGSprite->getContentSize().width < 0 ||
         menuBGSprite->getContentSize().height <= 0) {
-        problemLoading("'parchment_sealmess.jpg'");
+        problemLoading("'parchment_seamless.jpg'");
     }
 
     menuBGSprite->getTexture()->setTexParameters(texParams);
     menuBGSprite->setTextureRect(threeHalfRects);
 
+    auto bottomHalfRect = threeHalfRects;
+    bottomHalfRect.size.width = 0.05 * threeHalfRects.size.width;
+    bottomHalfRect.origin.x = halfRect.origin.x + halfRect.size.width;
+    Vec2 tempOrigin = bottomHalfRect.origin;
+    bottomHalfRect.origin = Vec2(0, 0);
+
+    auto menuBGBotSprite = Sprite::create("menuIcons/parchment_burnt.png");
+    if (menuBGBotSprite == nullptr || menuBGBotSprite->getContentSize().width < 0 ||
+        menuBGBotSprite->getContentSize().height <= 0) {
+        problemLoading("'parchment_burnt.png'");
+    }
+
+    auto vertShaderSrc =
+        FileUtils::getInstance()->getStringFromFile("materials/burnt.vert");
+    auto fragShaderSrc =
+        FileUtils::getInstance()->getStringFromFile("materials/burnt.frag");
+
+    auto *program = backend::Device::getInstance()->newProgram(vertShaderSrc,
+                                                               fragShaderSrc);
+    auto programState = new (std::nothrow) backend::ProgramState(program);
+    auto scaleLoc = programState->getUniformLocation("scale");
+    float scale = 1;
+    programState->setUniform(scaleLoc, &scale, sizeof(float));
+    menuBGBotSprite->setProgramState(programState);
+
+    menuBGBotSprite->setTextureRect(bottomHalfRect);
+
+    bottomHalfRect.origin = tempOrigin;
+
     auto menuBG = MenuItemSprite::create(menuBGSprite, menuBGSprite);
     menuBG->setPosition(threeHalfRects.getMidX(), threeHalfRects.getMidY());
     menuBG->setEnabled(false);
+
+    auto menuBGBot = MenuItemSprite::create(menuBGBotSprite, menuBGBotSprite);
+    menuBGBot->setPosition(bottomHalfRect.getMidX(), bottomHalfRect.getMidY());
+    menuBGBot->setEnabled(false);
+
+#ifdef COCOS2D_DEBUG
+    printRect(threeHalfRects);
+    printRect(bottomHalfRect);
+#endif
 
     // Center items
     auto close = loadMenuItem("close.png", closeRect);
@@ -322,9 +355,9 @@ void HelloWorld::insertMainMenu() {
     auto blender = loadMenuItem("blender.png", blenderRect, false);
     auto copy = loadMenuLabel(copyLabel, copyRect);
 
-    _menu = Menu::create(menuBG, add, close, refresh, _diceUI, fire, light,
-                         mobile, usage, inst, credit, info, built, ink, coco,
-                         blender, copy, NULL);
+    _menu = Menu::create(menuBG, menuBGBot, add, close, refresh, _diceUI, fire,
+                         light, mobile, usage, inst, credit, info, built, ink,
+                         coco, blender, copy, NULL);
     _menu->setPosition(vOrig.x - halfRect.size.width, vOrig.y);
     this->addChild(_menu, 1);
     _menuD.setNodeAndSize(_menu, halfRect);
