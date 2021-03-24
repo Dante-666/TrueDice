@@ -184,29 +184,38 @@ void HelloWorld::insertMainMenu() {
     TTFConfig bigLabelConfig = labelConfig;
     bigLabelConfig.fontSize = 36;
 
-    auto usageLabel = Label::createWithTTF(bigLabelConfig, "Usage");
-    auto instLabel = Label::createWithTTF(
+    auto createLabel = [](TTFConfig &labelConfig, const std::string &text,
+                          TextHAlignment align =
+                              TextHAlignment::LEFT) -> Label * {
+        Color4B textCol(21, 27, 31, 255);
+        auto ret = Label::createWithTTF(labelConfig, text, align);
+        ret->setTextColor(textCol);
+	ret->enableShadow(Color4B::BLACK, Size(1.5, -1.5), 8);
+        return ret;
+    };
+
+    auto usageLabel = createLabel(bigLabelConfig, "Usage");
+    auto instLabel = createLabel(
         labelConfig,
         "Accelerometer is usually offset from the center and "
         "close to where the camera is.\n Holding the mobile as depicted and "
         "shaking it left and right should result in the best effect.",
         TextHAlignment::LEFT);
     auto creditLabel =
-        Label::createWithTTF(bigLabelConfig, "Credits", TextHAlignment::CENTER);
-    auto infoLabel =
-        Label::createWithTTF(labelConfig,
-                             "Artwork : Siddharth\n"
-                             "Design : Siddharth\n\n"
-                             "SFX @ <source>\n"
-                             "Textures @ FantasyStock|10ravens@DeviantArt\n"
-                             "Contact : SiddharthJSingh@protonmail.com",
-                             TextHAlignment::CENTER);
+        createLabel(bigLabelConfig, "Credits", TextHAlignment::CENTER);
+    auto infoLabel = createLabel(labelConfig,
+                                 "Artwork : Siddharth\n"
+                                 "Design : Siddharth\n\n"
+                                 "SFX @ -Source-\n"
+                                 "Textures @ FantasyStock|10ravens@DeviantArt\n"
+                                 "Contact : SiddharthJSingh@protonmail.com",
+                                 TextHAlignment::CENTER);
     auto builtLabel =
-        Label::createWithTTF(labelConfig, "Built With", TextHAlignment::CENTER);
-    auto copyLabel = Label::createWithTTF(labelConfig,
-                                          "Copyright 2021, Siddharth J Singh\n"
-                                          "All rights reserved",
-                                          TextHAlignment::CENTER);
+        createLabel(labelConfig, "Built With", TextHAlignment::CENTER);
+    auto copyLabel = createLabel(labelConfig,
+                                 "Copyright 2021, Siddharth J Singh\n"
+                                 "All rights reserved",
+                                 TextHAlignment::CENTER);
 
     auto loadMenuItem =
         [](const std::string &loc, Rect &pos, bool enabled = true,
@@ -279,7 +288,7 @@ void HelloWorld::insertMainMenu() {
 
     auto bottomHalfRect = threeHalfRects;
     bottomHalfRect.size.width = 0.05 * threeHalfRects.size.width;
-    bottomHalfRect.origin.x = halfRect.origin.x + halfRect.size.width;
+    bottomHalfRect.origin.x = halfRect.origin.x + halfRect.size.width - bottomHalfRect.size.width/2;
     Vec2 tempOrigin = bottomHalfRect.origin;
     bottomHalfRect.origin = Vec2(0, 0);
 
