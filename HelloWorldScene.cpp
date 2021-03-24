@@ -48,9 +48,6 @@ bool HelloWorld::init() {
         return false;
     }
 
-    auto visibleSize = Director::getInstance()->getVisibleSize();
-    auto origin = Director::getInstance()->getVisibleOrigin();
-
     insertMainMenu();
 
 #ifdef COCOS2D_DEBUG
@@ -206,7 +203,7 @@ void HelloWorld::insertMainMenu() {
     auto infoLabel = createLabel(labelConfig,
                                  "Artwork : Siddharth\n"
                                  "Design : Siddharth\n\n"
-                                 "SFX @ -Source-\n"
+                                 "SFX @ zapsplat.com\n"
                                  "Textures @ FantasyStock|10ravens@DeviantArt\n"
                                  "Contact : SiddharthJSingh@protonmail.com",
                                  TextHAlignment::CENTER);
