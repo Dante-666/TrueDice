@@ -24,6 +24,7 @@
 
 #include "AppDelegate.h"
 #include "HelloWorldScene.h"
+#include "LoadScene.h"
 
 // #define USE_AUDIO_ENGINE 1
 
@@ -113,9 +114,13 @@ bool AppDelegate::applicationDidFinishLaunching() {
 
     // create a scene. it's an autorelease object
     auto scene = HelloWorld::createScene();
+    auto loadscreen = LoadScreen::createScene();
 
     // run
     director->runWithScene(scene);
+
+    // push the loadscreen now and pop that when some animation happens
+    director->pushScene(loadscreen);
 
     return true;
 }
