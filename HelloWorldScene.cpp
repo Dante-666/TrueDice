@@ -48,6 +48,8 @@ bool HelloWorld::init() {
         return false;
     }
 
+    Director::getInstance()->setDisplayStats(false);
+
     insertMainMenu();
 
 #ifdef COCOS2D_DEBUG
@@ -285,7 +287,6 @@ void HelloWorld::insertMainMenu() {
 
     auto bottomHalfRect = threeHalfRects;
     bottomHalfRect.size.width = 0.05 * threeHalfRects.size.width;
-    bottomHalfRect.origin.x = halfRect.origin.x + halfRect.size.width - bottomHalfRect.size.width/2;
     Vec2 tempOrigin = bottomHalfRect.origin;
     bottomHalfRect.origin = Vec2(0, 0);
 
@@ -311,6 +312,9 @@ void HelloWorld::insertMainMenu() {
     menuBGBotSprite->setTextureRect(bottomHalfRect);
 
     bottomHalfRect.origin = tempOrigin;
+    bottomHalfRect.origin.x =
+        halfRect.size.width -
+        (menuBGBotSprite->getTexture()->getPixelsWide() * 8) / 11.0;
 
     auto menuBG = MenuItemSprite::create(menuBGSprite, menuBGSprite);
     menuBG->setPosition(threeHalfRects.getMidX(), threeHalfRects.getMidY());
