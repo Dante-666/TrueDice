@@ -100,6 +100,8 @@ class HelloWorld : public cocos2d::Scene {
     // a rigid body so that vector can be maintained later
     void insertDice(const cocos2d::Color4F &color);
 
+    void removeActiveDice();
+
     // add a box composed with places
     void addQBox();
 
