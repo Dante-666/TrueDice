@@ -143,7 +143,7 @@ void HelloWorld::insertMainMenu() {
 
     // Credit Rect
     auto creditSize = leftMainSize;
-    creditSize.width /= 8;
+    creditSize.width /= 16;
     auto creditRect = Rect(leftMainRect.origin, creditSize);
 
     // Info Rect
@@ -168,20 +168,26 @@ void HelloWorld::insertMainMenu() {
     auto blenderRect = Rect(iconRect.origin + 2 * iconOffSet, iconRect.size);
 
     // Copyright Rect
-    auto copyRect =
-        Rect(Vec2(halfRect.size.width - builtSize.width, iconRect.origin.y),
-             builtSize);
+    auto copySize = leftMainSize;
+    copySize.width /= 8;//leftMainSize.width - (iconRect.origin.x + iconSize.width);
+    auto copyRect = Rect(iconRect.origin + Vec2(iconSize.width, 0), copySize);
+
+#ifdef COCOS2D_DEBUG
+    printSize(leftMainSize);
+    printRect(inkRect);
+    printRect(copyRect);
+#endif
 
     TTFConfig labelConfig;
     labelConfig.fontFilePath = "fonts/Marker Felt.ttf";
-    labelConfig.fontSize = 24;
+    labelConfig.fontSize = 36;
     labelConfig.glyphs = GlyphCollection::DYNAMIC;
     labelConfig.outlineSize = 0;
     labelConfig.customGlyphs = nullptr;
     labelConfig.distanceFieldEnabled = false;
 
     TTFConfig bigLabelConfig = labelConfig;
-    bigLabelConfig.fontSize = 36;
+    bigLabelConfig.fontSize = 56;
 
     auto createLabel = [](TTFConfig &labelConfig, const std::string &text,
                           TextHAlignment align =
@@ -200,6 +206,7 @@ void HelloWorld::insertMainMenu() {
         "close to where the camera is.\n Holding the mobile as depicted and "
         "shaking it left and right should result in the best effect.",
         TextHAlignment::LEFT);
+    instLabel->setMaxLineWidth(vSize.height * 0.8);
     auto creditLabel =
         createLabel(bigLabelConfig, "Credits", TextHAlignment::CENTER);
     auto infoLabel = createLabel(labelConfig,
@@ -323,11 +330,6 @@ void HelloWorld::insertMainMenu() {
     auto menuBGBot = MenuItemSprite::create(menuBGBotSprite, menuBGBotSprite);
     menuBGBot->setPosition(bottomHalfRect.getMidX(), bottomHalfRect.getMidY());
     menuBGBot->setEnabled(false);
-
-#ifdef COCOS2D_DEBUG
-    printRect(threeHalfRects);
-    printRect(bottomHalfRect);
-#endif
 
     // Center items
     auto close = loadMenuItem("close.png", closeRect);

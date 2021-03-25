@@ -114,13 +114,13 @@ bool AppDelegate::applicationDidFinishLaunching() {
 
     // create a scene. it's an autorelease object
     auto scene = HelloWorld::createScene();
-    auto loadscreen = LoadScreen::createScene();
+    //auto loadscreen = LoadScreen::createScene();
 
     // run
     director->runWithScene(scene);
 
     // push the loadscreen now and pop that when some animation happens
-    director->pushScene(loadscreen);
+    //director->pushScene(loadscreen);
 
     return true;
 }
