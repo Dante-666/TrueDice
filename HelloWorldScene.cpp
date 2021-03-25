@@ -195,7 +195,7 @@ void HelloWorld::insertMainMenu() {
         Color4B textCol(21, 27, 31, 255);
         auto ret = Label::createWithTTF(labelConfig, text, align);
         ret->setTextColor(textCol);
-	ret->enableShadow(Color4B::BLACK, Size(1.5, -1.5), 8);
+	ret->enableShadow(Color4B::BLACK, Size(2.5, -2.5), 8);
         return ret;
     };
 
@@ -343,6 +343,7 @@ void HelloWorld::insertMainMenu() {
     add->setCallback(
         std::bind(&HelloWorld::insertDice, this,
                   std::bind(&MenuItemMultiImage::getColor, _diceUI)));
+    refresh->setCallback(std::bind(&HelloWorld::removeActiveDice, this));
 
     auto fire = loadMenuItem("fire.png", fireRect, true, "sfire.png");
     auto light = loadMenuItem("light.png", lightRect, true, "slight.png");
@@ -404,11 +405,10 @@ void HelloWorld::insertMainMenu() {
 #ifdef COCOS2D_DEBUG
 void HelloWorld::insertDebugLabels() {
     // create label atlas for showing raw accel data
-    accelLabel = Label::create();
-    accelLabel->retain();
+    //
     char buffer[30] = {0};
     sprintf(buffer, "A: %+1.3G / %+1.3G / %+1.3G", 0., 0., 0.);
-    accelLabel->initWithTTF(buffer, "fonts/Marker Felt.ttf", 24);
+    accelLabel = Label::createWithTTF(buffer, "fonts/Marker Felt.ttf", 24);
     if (accelLabel == nullptr) {
         problemLoading("'fonts/Marker Felt.ttf'");
     } else {
@@ -417,10 +417,8 @@ void HelloWorld::insertDebugLabels() {
     }
 
     // create label atlas for showing raw gravity data
-    gravityLabel = Label::create();
-    gravityLabel->retain();
     sprintf(buffer, "G: %+1.3G / %+1.3G / %+1.3G", 0., 0., 0.);
-    gravityLabel->initWithTTF(buffer, "fonts/Marker Felt.ttf", 24);
+    gravityLabel = Label::createWithTTF(buffer, "fonts/Marker Felt.ttf", 24);
     if (gravityLabel == nullptr) {
         problemLoading("'fonts/Marker Felt.ttf'");
     } else {
@@ -492,6 +490,14 @@ void HelloWorld::insertDice(const Color4F &color) {
         dice->conditionalCallBack(ParticleType::NONE);
     }
     _dices.push_back(dice);
+}
+
+void HelloWorld::removeActiveDice() {
+    while(_dices.size() > 1) {
+	auto it = _dices.begin();
+	this->removeChild(*it);
+	_dices.erase(it);
+    }
 }
 
 void HelloWorld::addQBox() {
