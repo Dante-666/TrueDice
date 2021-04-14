@@ -211,9 +211,10 @@ void HelloWorld::insertMainMenu() {
         createLabel(bigLabelConfig, "Credits", TextHAlignment::CENTER);
     auto infoLabel = createLabel(labelConfig,
                                  "Artwork : Siddharth\n"
-                                 "Design : Siddharth\n\n"
+                                 "Design : Siddharth\n"
+                                 "Testing : Siddharth\n\n"
                                  "SFX @ zapsplat.com\n"
-                                 "Textures @ FantasyStock|10ravens@DeviantArt\n"
+                                 "Textures @ FantasyStock, 10ravens@DeviantArt\n"
                                  "Contact : SiddharthJSingh@protonmail.com",
                                  TextHAlignment::CENTER);
     auto builtLabel =
@@ -563,7 +564,8 @@ void HelloWorld::createAccelerationCallbacks() {
 
     // add the motion sensor
     Device::setAccelerometerEnabled(true);
-    Device::setKeepScreenOn(true);
+    // Turn screen off for power saving, user can anyhow control this
+    Device::setKeepScreenOn(false);
 
     auto accelListener = EventListenerAcceleration::create(
         CC_CALLBACK_2(HelloWorld::onAcceleration, this));

@@ -15,19 +15,21 @@ template <typename T> class Singleton {
 class MenuState {
     cocos2d::Menu *_menu;
 
+  protected:
+    static int actionTag;
+    static float volume;
+
   public:
-    virtual ~MenuState() {
-	CC_SAFE_DELETE(_menu);
-    };
+    virtual ~MenuState() { CC_SAFE_DELETE(_menu); };
     virtual MenuState *swipeRight() { return this; };
     virtual MenuState *swipeLeft() { return this; };
     virtual MenuState *swipeUpwards() { return this; };
     virtual MenuState *swipeDownwards() { return this; };
-    virtual void setMoveToDims(cocos2d::Rect& visRect) = 0;
+    virtual void setMoveToDims(cocos2d::Rect &visRect) = 0;
 
-    void setNode(cocos2d::Menu *menu, cocos2d::Rect& visRect) {
-	_menu = menu; 
-	setMoveToDims(visRect);
+    void setNode(cocos2d::Menu *menu, cocos2d::Rect &visRect) {
+        _menu = menu;
+        setMoveToDims(visRect);
     };
     cocos2d::Menu *getMenu() { return _menu; };
 };
@@ -46,7 +48,7 @@ class CenterState : public MenuState, public Singleton<CenterState> {
     virtual MenuState *swipeRight() override;
     virtual MenuState *swipeLeft() override;
     virtual MenuState *swipeUpwards() override;
-    virtual void setMoveToDims(cocos2d::Rect& visRect) override;
+    virtual void setMoveToDims(cocos2d::Rect &visRect) override;
     friend class Singleton<CenterState>;
 };
 
@@ -58,7 +60,7 @@ class LeftState : public MenuState, public Singleton<LeftState> {
 
   public:
     virtual MenuState *swipeRight() override;
-    virtual void setMoveToDims(cocos2d::Rect& visRect) override;
+    virtual void setMoveToDims(cocos2d::Rect &visRect) override;
     friend class Singleton<LeftState>;
 };
 
@@ -70,7 +72,7 @@ class RightState : public MenuState, public Singleton<RightState> {
 
   public:
     virtual MenuState *swipeLeft() override;
-    virtual void setMoveToDims(cocos2d::Rect& visRect) override;
+    virtual void setMoveToDims(cocos2d::Rect &visRect) override;
     friend class Singleton<RightState>;
 };
 
@@ -82,7 +84,7 @@ class InActiveState : public MenuState, public Singleton<InActiveState> {
 
   public:
     virtual MenuState *swipeDownwards() override;
-    virtual void setMoveToDims(cocos2d::Rect& visRect) override;
+    virtual void setMoveToDims(cocos2d::Rect &visRect) override;
     friend class Singleton<InActiveState>;
 };
 
@@ -90,11 +92,11 @@ class MenuDelegate {
     MenuState *_currState;
 
   public:
-    void setNodeAndSize(cocos2d::Menu *menu, cocos2d::Rect& visRect) {
+    void setNodeAndSize(cocos2d::Menu *menu, cocos2d::Rect &visRect) {
         InActiveState::getInstance()->setNode(menu, visRect);
-	CenterState::getInstance()->setNode(menu, visRect);
-	LeftState::getInstance()->setNode(menu, visRect);
-	RightState::getInstance()->setNode(menu, visRect);
+        CenterState::getInstance()->setNode(menu, visRect);
+        LeftState::getInstance()->setNode(menu, visRect);
+        RightState::getInstance()->setNode(menu, visRect);
 
         _currState = InActiveState::getInstance();
     };
