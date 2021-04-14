@@ -51,6 +51,7 @@
 #include <vector>
 
 #define TG3_GRAVITY_EARTH (9.80665f)
+#define LA_MAX (8.0f)
 
 class HelloWorld : public cocos2d::Scene {
     cocos2d::Mat4 _android2Game;
