@@ -5,13 +5,19 @@ NS_CC_BEGIN
 int MyPhysicsSprite3D::_idx = 0;
 
 void MyPhysicsSprite3D::pairCallBack(const Physics3DCollisionInfo &ci) {
+    auto velocity = ci.totalVelocity;
+    if(velocity > VELOCITY_MAX) {
+	velocity = VELOCITY_MAX;
+    }
+    auto volume = velocity/VELOCITY_MAX;
+
     if (!ci.dynamicCollision) {
         // Expects objB to be the ground always
         auto mask = ci.objB->getMask();
         if ((mask & _id) == 0) {
             ci.objB->setMask(mask | _id);
+            AudioEngine::play2d("sfx/hitWall.mp3", false, volume);
             if (this->getChildrenCount() < 6) {
-                AudioEngine::play2d("sfx/hitWall.mp3", false, 1.0);
                 PUParticleSystem3D *ps;
                 if (_type == ParticleType::NONE) {
                     return;
@@ -38,10 +44,10 @@ void MyPhysicsSprite3D::pairCallBack(const Physics3DCollisionInfo &ci) {
     } else {
         auto mask = ci.objB->getMask();
         if ((mask & _id) == 0) {
-            ci.objB->setMask(mask | _id);
+            ci.objB->setMask(mask | _id); 
+	    // could play different audio here
+            AudioEngine::play2d("sfx/hitDice.mp3", false, volume);
             if (this->getChildrenCount() < 6) {
-                // could play different audio here
-                AudioEngine::play2d("sfx/hitWall.mp3", false, 0.5);
                 PUParticleSystem3D *ps;
                 if (_type == ParticleType::NONE) {
                     return;
