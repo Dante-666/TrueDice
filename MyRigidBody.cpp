@@ -3,13 +3,14 @@
 NS_CC_BEGIN
 
 int MyPhysicsSprite3D::_idx = 0;
+float MyPhysicsSprite3D::_particleDuration = 3;
 
 void MyPhysicsSprite3D::pairCallBack(const Physics3DCollisionInfo &ci) {
     auto velocity = ci.totalVelocity;
-    if(velocity > VELOCITY_MAX) {
-	velocity = VELOCITY_MAX;
+    if (velocity > VELOCITY_MAX) {
+        velocity = VELOCITY_MAX;
     }
-    auto volume = velocity/VELOCITY_MAX;
+    auto volume = velocity / VELOCITY_MAX;
 
     if (!ci.dynamicCollision) {
         // Expects objB to be the ground always
@@ -17,7 +18,8 @@ void MyPhysicsSprite3D::pairCallBack(const Physics3DCollisionInfo &ci) {
         if ((mask & _id) == 0) {
             ci.objB->setMask(mask | _id);
             AudioEngine::play2d("sfx/hitWall.mp3", false, volume);
-            if (this->getChildrenCount() < 6) {
+            if (!last_action ||
+                last_action->getElapsed() > _particleDuration / 9) {
                 PUParticleSystem3D *ps;
                 if (_type == ParticleType::NONE) {
                     return;
@@ -35,19 +37,21 @@ void MyPhysicsSprite3D::pairCallBack(const Physics3DCollisionInfo &ci) {
                 ps->startParticleSystem();
                 ps->setCameraMask(2);
                 this->addChild(ps);
-                ps->runAction(Sequence::create(
-                    DelayTime::create(3),
+                last_action = Sequence::create(
+                    DelayTime::create(_particleDuration),
                     CallFunc::create([=]() { ps->removeFromParent(); }),
-                    nullptr));
+                    nullptr);
+                ps->runAction(last_action);
             }
         }
     } else {
         auto mask = ci.objB->getMask();
         if ((mask & _id) == 0) {
-            ci.objB->setMask(mask | _id); 
-	    // could play different audio here
+            ci.objB->setMask(mask | _id);
+            // could play different audio here
             AudioEngine::play2d("sfx/hitDice.mp3", false, volume);
-            if (this->getChildrenCount() < 6) {
+            if (!last_action ||
+                last_action->getElapsed() > _particleDuration / 9) {
                 PUParticleSystem3D *ps;
                 if (_type == ParticleType::NONE) {
                     return;
@@ -65,10 +69,11 @@ void MyPhysicsSprite3D::pairCallBack(const Physics3DCollisionInfo &ci) {
                 ps->startParticleSystem();
                 ps->setCameraMask(2);
                 this->addChild(ps);
-                ps->runAction(Sequence::create(
-                    DelayTime::create(3),
+                last_action = Sequence::create(
+                    DelayTime::create(_particleDuration),
                     CallFunc::create([=]() { ps->removeFromParent(); }),
-                    nullptr));
+                    nullptr);
+                ps->runAction(last_action);
             }
         }
     }
@@ -90,7 +95,7 @@ void MyPhysicsSprite3D::bindExitCallBack(Physics3DCollider *collider) {
                                         std::placeholders::_1);
 }
 
-void MyPhysicsSprite3D::conditionalCallBack(const ParticleType& type) {
+void MyPhysicsSprite3D::conditionalCallBack(const ParticleType &type) {
     _type = type;
 }
 
