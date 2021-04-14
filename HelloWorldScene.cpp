@@ -24,6 +24,7 @@
 
 #include "HelloWorldScene.h"
 #include "renderer/backend/Types.h"
+#include <cmath>
 #include <iostream>
 #include <new>
 #include <vector>
@@ -87,7 +88,6 @@ void HelloWorld::insertMainMenu() {
                   << std::endl;
     };
 #endif
-
 
     // This gives how much screen area we have to work with
     auto halfRect = Rect(vOrig, vSize);
@@ -169,7 +169,8 @@ void HelloWorld::insertMainMenu() {
 
     // Copyright Rect
     auto copySize = leftMainSize;
-    copySize.width /= 8;//leftMainSize.width - (iconRect.origin.x + iconSize.width);
+    copySize.width /=
+        8; // leftMainSize.width - (iconRect.origin.x + iconSize.width);
     auto copyRect = Rect(iconRect.origin + Vec2(iconSize.width, 0), copySize);
 
 #ifdef COCOS2D_DEBUG
@@ -195,7 +196,7 @@ void HelloWorld::insertMainMenu() {
         Color4B textCol(21, 27, 31, 255);
         auto ret = Label::createWithTTF(labelConfig, text, align);
         ret->setTextColor(textCol);
-	ret->enableShadow(Color4B::BLACK, Size(2.5, -2.5), 8);
+        ret->enableShadow(Color4B::BLACK, Size(2.5, -2.5), 8);
         return ret;
     };
 
@@ -209,14 +210,15 @@ void HelloWorld::insertMainMenu() {
     instLabel->setMaxLineWidth(vSize.height * 0.8);
     auto creditLabel =
         createLabel(bigLabelConfig, "Credits", TextHAlignment::CENTER);
-    auto infoLabel = createLabel(labelConfig,
-                                 "Artwork : Siddharth\n"
-                                 "Design : Siddharth\n"
-                                 "Testing : Siddharth\n\n"
-                                 "SFX @ zapsplat.com\n"
-                                 "Textures @ FantasyStock, 10ravens@DeviantArt\n"
-                                 "Contact : SiddharthJSingh@protonmail.com",
-                                 TextHAlignment::CENTER);
+    auto infoLabel =
+        createLabel(labelConfig,
+                    "Artwork : Siddharth\n"
+                    "Design : Siddharth\n"
+                    "Testing : Siddharth\n\n"
+                    "SFX @ zapsplat.com\n"
+                    "Textures @ FantasyStock, 10ravens@DeviantArt\n"
+                    "Contact : SiddharthJSingh@protonmail.com",
+                    TextHAlignment::CENTER);
     auto builtLabel =
         createLabel(labelConfig, "Built With", TextHAlignment::CENTER);
     auto copyLabel = createLabel(labelConfig,
@@ -299,7 +301,8 @@ void HelloWorld::insertMainMenu() {
     bottomHalfRect.origin = Vec2(0, 0);
 
     auto menuBGBotSprite = Sprite::create("menuIcons/parchment_burnt.png");
-    if (menuBGBotSprite == nullptr || menuBGBotSprite->getContentSize().width < 0 ||
+    if (menuBGBotSprite == nullptr ||
+        menuBGBotSprite->getContentSize().width < 0 ||
         menuBGBotSprite->getContentSize().height <= 0) {
         problemLoading("'parchment_burnt.png'");
     }
@@ -494,10 +497,10 @@ void HelloWorld::insertDice(const Color4F &color) {
 }
 
 void HelloWorld::removeActiveDice() {
-    while(_dices.size() > 1) {
-	auto it = _dices.begin();
-	this->removeChild(*it);
-	_dices.erase(it);
+    while (_dices.size() > 1) {
+        auto it = _dices.begin();
+        this->removeChild(*it);
+        _dices.erase(it);
     }
 }
 
@@ -731,13 +734,30 @@ void HelloWorld::onAcceleration(Acceleration *accel, Event *event) {
         _accumlaDt = 0;
     }
 #endif
+
+    auto gravity = this->getPhysics3DWorld()->getGravity();
+    auto lDotg = gravity.dot(android_l_accel);
+    auto cosine = lDotg / (gravity.length() * android_l_accel.length());
+    auto alpha = -2.5;
+
+    // This component is to smooth out the linear acceleration
+    static float beta = 1/(LA_MAX*LA_MAX);
+    auto normalized = android_l_accel.getNormalized();
+    auto mag = android_l_accel.length();
+    if (mag > LA_MAX) {
+        android_l_accel = normalized * LA_MAX;
+    } else {
+        auto scale = beta * pow(mag, 3);
+        android_l_accel = normalized * scale;
+    }
+
     // apply a scaled force in the opposite direction to make it work
     // the impulses are too wild,
     // scale these down and also negate the world gravity while applying this
     // for more realistic behavior
     for (auto dice : _dices) {
         auto rb = static_cast<Physics3DRigidBody *>(dice->getPhysicsObj());
-        rb->applyCentralImpulse(android_l_accel * -2);
+        rb->applyCentralImpulse(android_l_accel * alpha);
     }
 }
 
